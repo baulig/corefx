@@ -67,10 +67,15 @@ check_native_prereqs()
     echo "Checking pre-requisites..."
 
     # Check presence of CMake on the path
-    hash cmake 2>/dev/null || { echo >&2 "Please install cmake before running this script"; exit 1; }
+    hash cmake 2>/dev/null \
+        || { echo >&2 "Please install cmake before running this script"; exit 1; }
 
     # Check for clang
-    hash clang-$__ClangMajorVersion.$__ClangMinorVersion 2>/dev/null ||  hash clang$__ClangMajorVersion$__ClangMinorVersion 2>/dev/null ||  hash clang 2>/dev/null || { echo >&2 "Please install clang before running this script"; exit 1; }
+    hash clang-$__ClangMajorVersion.$__ClangMinorVersion 2>/dev/null \
+        ||  hash clang$__ClangMajorVersion$__ClangMinorVersion 2>/dev/null \
+        ||  hash clang 2>/dev/null \
+        ||  hash gcc 2>/dev/null \
+        || { echo >&2 "Please install clang before running this script"; exit 1; }
 }
 
 
