@@ -20,6 +20,9 @@ using System.Threading.Tasks;
 
 namespace System.Net.Http
 {
+    using HttpWebRequest = Mono.Net.Http.HttpWebRequest;
+    using HttpWebResponse = Mono.Net.Http.HttpWebResponse;
+
     public class HttpClientHandler : HttpMessageHandler
     {
         #region Fields
@@ -597,6 +600,7 @@ namespace System.Net.Http
                 webRequest.CookieContainer = _cookieContainer;
             }
 
+#if !MARTIN_TEST
             if (_clientCertOptions == ClientCertificateOption.Automatic && ComNetOS.IsWin7orLater)
             {
                 X509CertificateCollection automaticClientCerts
@@ -606,6 +610,7 @@ namespace System.Net.Http
                     webRequest.ClientCertificates = automaticClientCerts;
                 }
             }
+#endif
         }
 
         private static void SetConnectionOptions(HttpWebRequest webRequest, HttpRequestMessage request)
