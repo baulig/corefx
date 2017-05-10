@@ -358,16 +358,20 @@ namespace System.Net
                 return LazyInitializer.EnsureInitialized(ref s_prefixList, ref s_internalInitialized, ref s_internalSyncObject, () =>
                 {
                     var httpRequestCreator = new HttpRequestCreator();
+#if !MARTIN_TEST
                     var ftpRequestCreator = new FtpWebRequestCreator();
                     var fileRequestCreator = new FileWebRequestCreator();
+#endif
 
                     const int Count = 4;
                     var prefixList = new List<WebRequestPrefixElement>(Count)
                     {
                         new WebRequestPrefixElement("http:", httpRequestCreator),
                         new WebRequestPrefixElement("https:", httpRequestCreator),
+#if !MARTIN_TEST
                         new WebRequestPrefixElement("ftp:", ftpRequestCreator),
                         new WebRequestPrefixElement("file:", fileRequestCreator),
+#endif
                     };
                     Debug.Assert(prefixList.Count == Count, $"Expected {Count}, got {prefixList.Count}");
 
