@@ -4,7 +4,7 @@
 
 namespace System.Net
 {
-    public class Authorization
+    public partial class Authorization
     {
         private string[] _protectionRealm;
         private bool _mutualAuth;
