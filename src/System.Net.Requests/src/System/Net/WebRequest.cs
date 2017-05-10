@@ -30,6 +30,7 @@ namespace System.Net
 
         private static List<WebRequestPrefixElement> s_prefixList;
         private static object s_internalSyncObject = new object();
+        private static bool s_internalInitialized = false;
 
         internal const int DefaultTimeoutMilliseconds = 100 * 1000;
 
@@ -354,7 +355,7 @@ namespace System.Net
                 // GetConfig() might use us, so we have a circular dependency issue
                 // that causes us to nest here. We grab the lock only if we haven't
                 // initialized.
-                return LazyInitializer.EnsureInitialized(ref s_prefixList, ref s_internalSyncObject, () =>
+                return LazyInitializer.EnsureInitialized(ref s_prefixList, ref s_internalInitialized, ref s_internalSyncObject, () =>
                 {
                     var httpRequestCreator = new HttpRequestCreator();
                     var ftpRequestCreator = new FtpWebRequestCreator();
