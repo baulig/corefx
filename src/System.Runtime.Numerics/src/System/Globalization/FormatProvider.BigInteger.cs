@@ -11,6 +11,9 @@ namespace System.Globalization
     {
         internal static void FormatBigInteger(ref ValueStringBuilder sb, int precision, int scale, bool sign, ReadOnlySpan<char> format, NumberFormatInfo numberFormatInfo, char[] digits, int startIndex)
         {
+#if MONO
+            throw new NotImplementedException();
+#else
             unsafe
             {
                 fixed (char* overrideDigits = digits)
@@ -32,6 +35,7 @@ namespace System.Globalization
                     }
                 }
             }
+#endif
         }
 
         internal static bool TryStringToBigInteger(
@@ -44,6 +48,9 @@ namespace System.Globalization
             out bool sign
             )
         {
+#if MONO
+            throw new NotImplementedException();
+#else
             FormatProvider.Number.NumberBuffer numberBuffer = new FormatProvider.Number.NumberBuffer();
 
             unsafe
@@ -70,6 +77,7 @@ namespace System.Globalization
                 sign = numberBuffer.sign;
                 return true;
             }
+#endif
         }
     }
 }
