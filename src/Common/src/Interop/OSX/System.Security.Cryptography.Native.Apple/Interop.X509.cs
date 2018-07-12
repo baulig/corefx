@@ -460,14 +460,14 @@ internal static partial class Interop
 
 namespace System.Security.Cryptography.X509Certificates
 {
-    internal sealed class SafeSecIdentityHandle : SafeKeychainItemHandle
+    internal sealed partial class SafeSecIdentityHandle : SafeKeychainItemHandle
     {
         public SafeSecIdentityHandle()
         {
         }
     }
 
-    internal sealed class SafeSecCertificateHandle : SafeKeychainItemHandle
+    internal sealed partial class SafeSecCertificateHandle : SafeKeychainItemHandle
     {
         public SafeSecCertificateHandle()
         {
