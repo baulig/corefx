@@ -5,6 +5,8 @@
 #include "pal_seckey.h"
 #include "pal_utilities.h"
 
+#if !TARGET_OS_IPHONE
+
 int32_t AppleCryptoNative_SecKeyExport(
     SecKeyRef pKey, int32_t exportPrivate, CFStringRef cfExportPassphrase, CFDataRef* ppDataOut, int32_t* pOSStatus)
 {
@@ -189,3 +191,6 @@ OSStatus ExportImportKey(SecKeyRef* key, SecExternalItemType type)
 
     return errSecBadReq;
 }
+
+#endif /* !TARGET_OS_IPHONE */
+
