@@ -40,6 +40,7 @@ AppleCryptoNative_X509DemuxAndRetainHandle(CFTypeRef handle, SecCertificateRef* 
     return 1;
 }
 
+#if !TARGET_OS_IPHONE
 int32_t
 AppleCryptoNative_X509GetPublicKey(SecCertificateRef cert, SecKeyRef* pPublicKeyOut, int32_t* pOSStatusOut)
 {
@@ -59,6 +60,7 @@ AppleCryptoNative_X509GetPublicKey(SecCertificateRef cert, SecKeyRef* pPublicKey
 #endif
     return (*pOSStatusOut == noErr);
 }
+#endif
 
 PAL_X509ContentType AppleCryptoNative_X509GetContentType(uint8_t* pbData, int32_t cbData)
 {
