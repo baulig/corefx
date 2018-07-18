@@ -80,8 +80,6 @@ pPrivateKeyOut: Receives a SecKeyRef for the private key associated with the ide
 */
 DLLEXPORT int32_t AppleCryptoNative_X509CopyPrivateKeyFromIdentity(SecIdentityRef identity, SecKeyRef* pPrivateKeyOut);
 
-#if !TARGET_OS_IPHONE
-
 /*
 Read cbData bytes of data from pbData and interpret it to a collection of certificates (or identities).
 
@@ -138,8 +136,6 @@ DLLEXPORT int32_t AppleCryptoNative_X509ImportCertificate(uint8_t* pbData,
                                                           SecIdentityRef* pIdentityOut,
                                                           int32_t* pOSStatus);
 
-#endif /* !TARGET_OS_IPHONE */
-
 /*
 Export the certificates (or identities) in data to the requested format type.
 
@@ -168,8 +164,6 @@ pOSStatus: Receives the result of SecItemExport
 */
 DLLEXPORT int32_t AppleCryptoNative_X509GetRawData(SecCertificateRef cert, CFDataRef* ppDataOut, int32_t* pOSStatus);
 
-#if !TARGET_OS_IPHONE
-
 /*
 Find a SecIdentityRef for the given cert and private key in the target keychain.
 If the key does not belong to any keychain it is added to the target keychain and left there.
@@ -186,6 +180,3 @@ DLLEXPORT int32_t AppleCryptoNative_X509CopyWithPrivateKey(SecCertificateRef cer
                                                            SecKeychainRef targetKeychain,
                                                            SecIdentityRef* pIdentityOut,
                                                            int32_t* pOSStatus);
-
-#endif
-
