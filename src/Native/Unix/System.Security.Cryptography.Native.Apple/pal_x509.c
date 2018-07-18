@@ -57,6 +57,7 @@ AppleCryptoNative_X509GetPublicKey(SecCertificateRef cert, SecKeyRef* pPublicKey
     return (*pOSStatusOut == noErr);
 }
 
+#if !TARGET_OS_IPHONE
 PAL_X509ContentType AppleCryptoNative_X509GetContentType(uint8_t* pbData, int32_t cbData)
 {
     if (pbData == NULL || cbData < 0)
@@ -86,7 +87,6 @@ PAL_X509ContentType AppleCryptoNative_X509GetContentType(uint8_t* pbData, int32_
         return PAL_Certificate;
     }
 	
-#if !TARGET_OS_IPHONE
     SecExternalFormat dataFormat = kSecFormatPKCS7;
     SecExternalFormat actualFormat = dataFormat;
     SecExternalItemType itemType = kSecItemTypeAggregate;
@@ -150,10 +150,10 @@ PAL_X509ContentType AppleCryptoNative_X509GetContentType(uint8_t* pbData, int32_
             return PAL_Certificate;
         }
     }
-#endif
 
     return PAL_X509Unknown;
 }
+#endif
 
 static int32_t ProcessCertificateTypeReturn(CFArrayRef items, SecCertificateRef* pCertOut, SecIdentityRef* pIdentityOut)
 {

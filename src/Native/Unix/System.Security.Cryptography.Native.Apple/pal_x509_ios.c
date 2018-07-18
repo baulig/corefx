@@ -8,6 +8,54 @@
 #include <dlfcn.h>
 #include <pthread.h>
 
+static OSStatus ImportCertificatePKCS12(CFDataRef cfData, CFStringRef cfPfxPassphrase, CFArrayRef *outItems)
+{
+    const void *keys[1], *values[1];
+    OSStatus status;
+
+    keys[0] = kSecImportExportPassphrase;
+    values[0] = cfPfxPassphrase;
+
+    CFDictionaryRef options = CFDictionaryCreate(NULL, keys, values, 1, NULL, NULL);
+    if (options == NULL)
+    {
+        return errSecAllocate;
+    }
+
+    status = SecPKCS12Import(cfData, options, outItems);
+
+    CFRelease(options);
+    return status;
+}
+
+PAL_X509ContentType AppleCryptoNative_X509GetContentType(uint8_t* pbData, int32_t cbData)
+{
+    if (pbData == NULL || cbData < 0)
+        return PAL_X509Unknown;
+
+    CFDataRef cfData = CFDataCreateWithBytesNoCopy(NULL, pbData, cbData, kCFAllocatorNull);
+
+    if (cfData == NULL)
+        return PAL_X509Unknown;
+
+    SecCertificateRef certref = SecCertificateCreateWithData(NULL, cfData);
+
+    if (certref != NULL)
+    {
+        CFRelease(certref);
+        return PAL_Certificate;
+    }
+
+    OSStatus osStatus = ImportCertificatePKCS12(cfData, NULL, NULL);
+    if (osStatus == noErr || osStatus == errSecPassphraseRequired || osStatus == errSecPkcs12VerifyFailure || osStatus == errSecAuthFailed)
+    {
+            return PAL_Pkcs12;
+    }
+
+    return PAL_X509Unknown;
+}
+
+
 static int
 export_certificate (void)
 {
@@ -101,7 +149,6 @@ int32_t AppleCryptoNative_X509ImportCertificate(uint8_t* pbData,
                                                 int32_t* pOSStatus)
 {
     CFArrayRef outItems = NULL;
-    const void *keys[1], *values[1];
     int32_t ret = 0;
 
     if (pCertOut != NULL)
@@ -116,33 +163,33 @@ int32_t AppleCryptoNative_X509ImportCertificate(uint8_t* pbData,
         return kErrorBadInput;
     }
 
-    keys[0] = kSecImportExportPassphrase;
-    values[0] = cfPfxPassphrase;
-
-    CFDataRef data = CFDataCreate(NULL, pbData, cbData);
-    if (data == NULL)
+    CFDataRef cfData = CFDataCreateWithBytesNoCopy(NULL, pbData, cbData, kCFAllocatorNull);
+    if (cfData == NULL)
     {
         *pOSStatus = errSecAllocate;
         return 0;
     }
 
-    CFDictionaryRef options = CFDictionaryCreate(NULL, keys, values, 1, NULL, NULL);
-    if (options == NULL)
+    if (contentType == PAL_Certificate)
     {
-        CFRelease(data);
-        *pOSStatus = errSecAllocate;
-        return 0;
+        SecCertificateRef certref = SecCertificateCreateWithData(NULL, cfData);
+
+        if (certref != NULL)
+        {
+            CFRelease(certref);
+            return PAL_Certificate;
+        }
+
+        return kErrorBadInput;
     }
 
-    *pOSStatus = SecPKCS12Import(data, options, &outItems);
+    *pOSStatus = ImportCertificatePKCS12(cfData, cfPfxPassphrase, &outItems);
 
     if (*pOSStatus == noErr)
     {
         ret = ProcessCertificateTypeReturn(outItems, pIdentityOut);
     }
 
-    CFRelease(data);
-    CFRelease(options);
     if (outItems != NULL)
     {
         CFRelease(outItems);
