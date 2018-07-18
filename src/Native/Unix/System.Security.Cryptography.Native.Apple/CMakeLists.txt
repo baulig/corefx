@@ -23,6 +23,7 @@ set(NATIVECRYPTO_SOURCES
     pal_symmetric.c
     pal_trust.c
     pal_x509.c
+    pal_x509_mac.c
     pal_x509chain.c
 )
 
