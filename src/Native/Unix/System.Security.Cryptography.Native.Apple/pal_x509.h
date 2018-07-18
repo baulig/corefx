@@ -22,6 +22,12 @@ enum
 };
 typedef uint32_t PAL_X509ContentType;
 
+static const int32_t kErrOutItemsNull = -3;
+static const int32_t kErrOutItemsEmpty = -2;
+static const int32_t kErrOutNotFound = -4;
+
+
+
 /*
 Given a handle, determine if it represents a SecCertificateRef, SecIdentityRef, or other.
 If the handle is a certificate or identity it is CFRetain()ed (and must later be CFRelease()d).

@@ -96,17 +96,37 @@ internal static partial class Interop
 
 namespace System.Security.Cryptography.X509Certificates
 {
-    internal sealed partial class SafeSecIdentityHandle : SafeKeychainItemHandle
+    internal sealed partial class SafeSecIdentityHandle : SafeHandle
     {
-        public SafeSecIdentityHandle ()
+        internal SafeSecIdentityHandle ()
+            : base (IntPtr.Zero, ownsHandle: true)
         {
         }
+
+        protected override bool ReleaseHandle ()
+        {
+            Interop.CoreFoundation.CFRelease (handle);
+            SetHandle (IntPtr.Zero);
+            return true;
+        }
+
+        public override bool IsInvalid => handle == IntPtr.Zero;
     }
 
-    internal sealed partial class SafeSecCertificateHandle : SafeKeychainItemHandle
+    internal sealed partial class SafeSecCertificateHandle : SafeHandle
     {
-        public SafeSecCertificateHandle ()
+        internal SafeSecCertificateHandle ()
+            : base (IntPtr.Zero, ownsHandle: true)
         {
         }
+
+        protected override bool ReleaseHandle ()
+        {
+            Interop.CoreFoundation.CFRelease (handle);
+            SetHandle (IntPtr.Zero);
+            return true;
+        }
+
+        public override bool IsInvalid => handle == IntPtr.Zero;
     }
 }

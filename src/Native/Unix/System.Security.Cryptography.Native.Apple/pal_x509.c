@@ -7,9 +7,6 @@
 #include <dlfcn.h>
 #include <pthread.h>
 
-static const int32_t kErrOutItemsNull = -3;
-static const int32_t kErrOutItemsEmpty = -2;
-
 int32_t
 AppleCryptoNative_X509DemuxAndRetainHandle(CFTypeRef handle, SecCertificateRef* pCertOut, SecIdentityRef* pIdentityOut)
 {
