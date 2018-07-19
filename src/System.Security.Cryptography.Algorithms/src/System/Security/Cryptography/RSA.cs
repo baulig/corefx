@@ -286,7 +286,7 @@ namespace System.Security.Cryptography
         public override string KeyExchangeAlgorithm => "RSA";
         public override string SignatureAlgorithm => "RSA";
 
-        private static Exception HashAlgorithmNameNullOrEmpty() =>
+        internal static Exception HashAlgorithmNameNullOrEmpty() =>
             new ArgumentException(SR.Cryptography_HashAlgorithmNameNullOrEmpty, "hashAlgorithm");
     }
 }
