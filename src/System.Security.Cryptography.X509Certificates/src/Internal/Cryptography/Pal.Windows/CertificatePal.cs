@@ -57,21 +57,13 @@ namespace Internal.Cryptography.Pal
             get { return _certContext.DangerousGetHandle(); }
         }
 
-        public string Issuer
-        {
-            get
-            {
-                return GetIssuerOrSubject(issuer: true);
-            }
-        }
+        public string Issuer => GetIssuerOrSubject(issuer: true, reverse: true);
 
-        public string Subject
-        {
-            get
-            {
-                return GetIssuerOrSubject(issuer: false);
-            }
-        }
+        public string Subject => GetIssuerOrSubject(issuer: false, reverse: true);
+
+        public string LegacyIssuer => GetIssuerOrSubject(issuer: true, reverse: false);
+
+        public string LegacySubject => GetIssuerOrSubject(issuer: false, reverse: false);
 
         public byte[] Thumbprint
         {
@@ -527,22 +519,12 @@ namespace Internal.Cryptography.Pal
             }
         }
 
-        private string GetIssuerOrSubject(bool issuer)
-        {
-            CertNameFlags flags = issuer ? CertNameFlags.CERT_NAME_ISSUER_FLAG : CertNameFlags.None;
-            CertNameStringType stringType = CertNameStringType.CERT_X500_NAME_STR | CertNameStringType.CERT_NAME_STR_REVERSE_FLAG;
-
-            int cchCount = Interop.crypt32.CertGetNameString(_certContext, CertNameType.CERT_NAME_RDN_TYPE, flags, ref stringType, null, 0);
-            if (cchCount == 0)
-                throw Marshal.GetHRForLastWin32Error().ToCryptographicException();;
-
-            StringBuilder sb = new StringBuilder(cchCount);
-            cchCount = Interop.crypt32.CertGetNameString(_certContext, CertNameType.CERT_NAME_RDN_TYPE, flags, ref stringType, sb, cchCount);
-            if (cchCount == 0)
-                throw Marshal.GetHRForLastWin32Error().ToCryptographicException();;
-
-            return sb.ToString();
-        }
+        private unsafe string GetIssuerOrSubject(bool issuer, bool reverse) =>
+            Interop.crypt32.CertGetNameString(
+                _certContext,
+                CertNameType.CERT_NAME_RDN_TYPE,
+                issuer ? CertNameFlags.CERT_NAME_ISSUER_FLAG : CertNameFlags.None,
+                CertNameStringType.CERT_X500_NAME_STR | (reverse ? CertNameStringType.CERT_NAME_STR_REVERSE_FLAG : 0));
 
         private CertificatePal(CertificatePal copyFrom)
         {
