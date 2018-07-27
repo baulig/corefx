@@ -17,10 +17,12 @@ SecPolicyRef AppleCryptoNative_X509ChainCreateDefaultPolicy()
     return SecPolicyCreateBasicX509();
 }
 
+#if FIXME
 SecPolicyRef AppleCryptoNative_X509ChainCreateRevocationPolicy()
 {
     return SecPolicyCreateRevocation(kSecRevocationUseAnyAvailableMethod | kSecRevocationRequirePositiveResponse);
 }
+#endif
 
 int32_t
 AppleCryptoNative_X509ChainCreate(CFTypeRef certs, CFTypeRef policies, SecTrustRef* pTrustOut, int32_t* pOSStatus)
@@ -55,12 +57,14 @@ int32_t AppleCryptoNative_X509ChainEvaluate(SecTrustRef chain,
         return -2;
     }
 
+#if FIXME
     *pOSStatus = SecTrustSetNetworkFetchAllowed(chain, allowNetwork);
 
     if (*pOSStatus != noErr)
     {
         return -3;
     }
+#endif
 
     SecTrustResultType trustResult;
     *pOSStatus = SecTrustEvaluate(chain, &trustResult);
@@ -108,6 +112,7 @@ CFArrayRef AppleCryptoNative_X509ChainGetTrustResults(SecTrustRef chain)
         return NULL;
     }
 
+#if FIXME
     CFDictionaryRef detailsAndStuff = SecTrustCopyResult(chain);
     CFArrayRef details = NULL;
 
@@ -124,6 +129,9 @@ CFArrayRef AppleCryptoNative_X509ChainGetTrustResults(SecTrustRef chain)
 
     CFRelease(detailsAndStuff);
     return details;
+#else
+    return NULL;
+#endif
 }
 
 static void MergeStatusCodes(CFTypeRef key, CFTypeRef value, void* context)

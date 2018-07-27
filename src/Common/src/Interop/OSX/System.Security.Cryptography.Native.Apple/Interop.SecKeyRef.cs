@@ -347,7 +347,7 @@ internal static partial class Interop
 
 namespace System.Security.Cryptography.Apple
 {
-    internal sealed class SafeSecKeyRefHandle : SafeKeychainItemHandle
+    internal sealed partial class SafeSecKeyRefHandle : SafeKeychainItemHandle
     {
     }
 }

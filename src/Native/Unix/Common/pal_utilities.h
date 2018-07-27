@@ -49,6 +49,10 @@
 #define sizeof_member(type,member) sizeof(((type*)NULL)->member)
 #endif
 
+// See https://stackoverflow.com/questions/51231405
+#define CONST_CAST2(TOTYPE, FROMTYPE, X) ((union { FROMTYPE _q; TOTYPE _nq; }){ ._q = (X) }._nq)
+#define CONST_CAST(TYPE, X) CONST_CAST2(TYPE, const TYPE, (X))
+
 #ifdef __cplusplus
 
 /**

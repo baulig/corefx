@@ -210,7 +210,7 @@ internal static partial class Interop
 
 namespace System.Security.Cryptography.Apple
 {
-    internal class SafeKeychainItemHandle : SafeHandle
+    internal partial class SafeKeychainItemHandle : SafeHandle
     {
         internal SafeKeychainItemHandle()
             : base(IntPtr.Zero, ownsHandle: true)

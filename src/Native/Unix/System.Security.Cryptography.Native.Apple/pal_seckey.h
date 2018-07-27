@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "pal_types.h"
+#include <pal_types.h>
 #include "pal_compiler.h"
 
 #include <Security/Security.h>
@@ -16,6 +16,8 @@ static const int32_t kErrorBadInput = -1;
 static const int32_t kErrorSeeError = -2;
 static const int32_t kErrorUnknownAlgorithm = -3;
 static const int32_t kErrorUnknownState = -4;
+
+#if !TARGET_OS_IPHONE
 
 /*
 Export a key object.
@@ -65,3 +67,6 @@ Export a key and re-import it to the NULL keychain.
 Only internal callers are expected.
 */
 OSStatus ExportImportKey(SecKeyRef* key, SecExternalItemType type);
+
+#endif /* !TARGET_OS_IPHONE */
+

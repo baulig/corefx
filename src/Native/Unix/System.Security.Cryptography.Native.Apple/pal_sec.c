@@ -4,7 +4,7 @@
 
 #include "pal_sec.h"
 
-CFStringRef AppleCryptoNative_SecCopyErrorMessageString(int32_t osStatus)
+CFStringRef AppleCryptoNative_SecCopyErrorMessageString(OSStatus osStatus)
 {
     return SecCopyErrorMessageString(osStatus, NULL);
 }
