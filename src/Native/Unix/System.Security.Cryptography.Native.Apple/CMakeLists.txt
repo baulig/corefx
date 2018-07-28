@@ -16,6 +16,7 @@ set(NATIVECRYPTO_SOURCES
     pal_keychain.c
     pal_random.c
     pal_rsa.c
+    pal_rsa_mac.c
     pal_sec.c
     pal_seckey.c
     pal_signverify.c
