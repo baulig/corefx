@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#include "pal_rsa.h"
+#include "pal_rsa_mac.h"
 
 static int32_t ExecuteCFDataTransform(
     SecTransformRef xform, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
@@ -56,6 +56,66 @@ int32_t AppleCryptoNative_RsaGenerateKey(
     *pOSStatus = status;
     return status == noErr;
 }
+
+int32_t AppleCryptoNative_RsaDecryptPkcs(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut)
+{
+    if (pDecryptedOut != NULL)
+        *pDecryptedOut = NULL;
+    if (pErrorOut != NULL)
+        *pErrorOut = NULL;
+
+    if (privateKey == NULL || pbData == NULL || cbData < 0 || pDecryptedOut == NULL || pErrorOut == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    int32_t ret = kErrorSeeError;
+    SecTransformRef decryptor = SecDecryptTransformCreate(privateKey, pErrorOut);
+
+    if (decryptor != NULL)
+    {
+        if (*pErrorOut == NULL)
+        {
+            ret = ExecuteCFDataTransform(decryptor, pbData, cbData, pDecryptedOut, pErrorOut);
+        }
+
+        CFRelease(decryptor);
+    }
+
+    return ret;
+}
+
+int32_t AppleCryptoNative_RsaEncryptPkcs(
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut)
+{
+    if (pEncryptedOut != NULL)
+        *pEncryptedOut = NULL;
+    if (pErrorOut != NULL)
+        *pErrorOut = NULL;
+
+    if (publicKey == NULL || pbData == NULL || cbData < 0 || pEncryptedOut == NULL || pErrorOut == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    int32_t ret = kErrorSeeError;
+    SecTransformRef encryptor = SecEncryptTransformCreate(publicKey, pErrorOut);
+
+    if (encryptor != NULL)
+    {
+        if (*pErrorOut == NULL)
+        {
+            ret = ExecuteCFDataTransform(encryptor, pbData, cbData, pEncryptedOut, pErrorOut);
+        }
+
+        CFRelease(encryptor);
+    }
+
+    return ret;
+}
+
+#if REQUIRE_MAC_SDK_VERSION(10_8)
 
 static int32_t ExecuteOaepTransform(SecTransformRef xform,
                                     uint8_t* pbData,
@@ -113,35 +173,6 @@ int32_t AppleCryptoNative_RsaDecryptOaep(SecKeyRef privateKey,
     return ret;
 }
 
-int32_t AppleCryptoNative_RsaDecryptPkcs(
-    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut)
-{
-    if (pDecryptedOut != NULL)
-        *pDecryptedOut = NULL;
-    if (pErrorOut != NULL)
-        *pErrorOut = NULL;
-
-    if (privateKey == NULL || pbData == NULL || cbData < 0 || pDecryptedOut == NULL || pErrorOut == NULL)
-    {
-        return kErrorBadInput;
-    }
-
-    int32_t ret = kErrorSeeError;
-    SecTransformRef decryptor = SecDecryptTransformCreate(privateKey, pErrorOut);
-
-    if (decryptor != NULL)
-    {
-        if (*pErrorOut == NULL)
-        {
-            ret = ExecuteCFDataTransform(decryptor, pbData, cbData, pDecryptedOut, pErrorOut);
-        }
-
-        CFRelease(decryptor);
-    }
-
-    return ret;
-}
-
 int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
                                          uint8_t* pbData,
                                          int32_t cbData,
@@ -175,34 +206,7 @@ int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
     return ret;
 }
 
-int32_t AppleCryptoNative_RsaEncryptPkcs(
-    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut)
-{
-    if (pEncryptedOut != NULL)
-        *pEncryptedOut = NULL;
-    if (pErrorOut != NULL)
-        *pErrorOut = NULL;
-
-    if (publicKey == NULL || pbData == NULL || cbData < 0 || pEncryptedOut == NULL || pErrorOut == NULL)
-    {
-        return kErrorBadInput;
-    }
-
-    int32_t ret = kErrorSeeError;
-    SecTransformRef encryptor = SecEncryptTransformCreate(publicKey, pErrorOut);
-
-    if (encryptor != NULL)
-    {
-        if (*pErrorOut == NULL)
-        {
-            ret = ExecuteCFDataTransform(encryptor, pbData, cbData, pEncryptedOut, pErrorOut);
-        }
-
-        CFRelease(encryptor);
-    }
-
-    return ret;
-}
+#endif /* REQUIRE_MAC_SDK_VERSION(10_8) */
 
 static int32_t ExecuteCFDataTransform(
     SecTransformRef xform, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)

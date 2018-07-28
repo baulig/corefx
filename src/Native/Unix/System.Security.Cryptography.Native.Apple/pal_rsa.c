@@ -4,6 +4,8 @@
 
 #include "pal_rsa.h"
 
+#if REQUIRE_MAC_SDK_VERSION(10_12) || REQUIRE_IOS_SDK_VERSION(11_4)
+
 static int32_t RsaPrimitive(SecKeyRef key,
                             uint8_t* pbData,
                             int32_t cbData,
@@ -76,3 +78,5 @@ int32_t AppleCryptoNative_RsaVerificationPrimitive(
     return RsaPrimitive(
         publicKey, pbData, cbData, pDataOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionRaw, SecKeyCreateEncryptedData);
 }
+
+#endif /* REQUIRE_MAC_SDK_VERSION(10_12) || REQUIRE_IOS_SDK_VERSION(10) */

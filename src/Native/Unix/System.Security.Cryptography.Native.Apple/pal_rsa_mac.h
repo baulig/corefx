@@ -18,6 +18,24 @@ DLLEXPORT int32_t AppleCryptoNative_RsaGenerateKey(int32_t keySizeBits,
                                                    int32_t* pOSStatus);
 
 /*
+Decrypt the contents of pbData using the provided privateKey under PKCS#1 padding.
+
+Follows pal_seckey return conventions.
+*/
+DLLEXPORT int32_t AppleCryptoNative_RsaDecryptPkcs(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut);
+
+/*
+Encrypt pbData for the provided publicKey using PKCS#1 padding.
+
+Follows pal_seckey return conventions.
+*/
+DLLEXPORT int32_t AppleCryptoNative_RsaEncryptPkcs(
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut);
+
+#if REQUIRE_MAC_SDK_VERSION(10_8)
+
+/*
 Decrypt the contents of pbData using the provided privateKey under OAEP padding.
 
 Follows pal_seckey return conventions.
@@ -28,14 +46,6 @@ DLLEXPORT int32_t AppleCryptoNative_RsaDecryptOaep(SecKeyRef privateKey,
                                                    PAL_HashAlgorithm mfgAlgorithm,
                                                    CFDataRef* pDecryptedOut,
                                                    CFErrorRef* pErrorOut);
-
-/*
-Decrypt the contents of pbData using the provided privateKey under PKCS#1 padding.
-
-Follows pal_seckey return conventions.
-*/
-DLLEXPORT int32_t AppleCryptoNative_RsaDecryptPkcs(
-    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut);
 
 /*
 Encrypt pbData for the provided publicKey using OAEP padding.
@@ -49,11 +59,4 @@ DLLEXPORT int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
                                                    CFDataRef* pEncryptedOut,
                                                    CFErrorRef* pErrorOut);
 
-/*
-Encrypt pbData for the provided publicKey using PKCS#1 padding.
-
-Follows pal_seckey return conventions.
-*/
-DLLEXPORT int32_t AppleCryptoNative_RsaEncryptPkcs(
-    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut);
-
+#endif
