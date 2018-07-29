@@ -11,19 +11,6 @@
 
 
 /*
-Extract a SecKeyRef for the public key from the certificate handle.
-
-Returns 1 on success, 0 on failure, any other value on invalid state.
-
-Output:
-pPublicKeyOut: Receives a CFRetain()ed SecKeyRef for the public key
-pOSStatusOut: Receives the result of SecCertificateCopyPublicKey
-*/
-DLLEXPORT int32_t
-AppleCryptoNative_X509GetPublicKey(SecCertificateRef cert, SecKeyRef* pPublicKeyOut, int32_t* pOSStatusOut);
-
-
-/*
 Read cbData bytes of data from pbData and interpret it to a collection of certificates (or identities).
 
 If cfPfxPassphrase represents the NULL (but not empty) passphrase and a PFX import gets a password
@@ -95,17 +82,6 @@ DLLEXPORT int32_t AppleCryptoNative_X509ExportData(CFArrayRef data,
                                                     CFStringRef cfExportPassphrase,
                                                     CFDataRef* pExportOut,
                                                     int32_t* pOSStatus);
-
-/*
-Extract the DER encoded value of a certificate (public portion only).
-
-Returns 1 on success, 0 on failure, any other value indicates invalid state.
-
-Output:
-ppDataOut: Receives a CFDataRef with the exported blob
-pOSStatus: Receives the result of SecItemExport
-*/
-DLLEXPORT int32_t AppleCryptoNative_X509GetRawData(SecCertificateRef cert, CFDataRef* ppDataOut, int32_t* pOSStatus);
 
 /*
 Find a SecIdentityRef for the given cert and private key in the target keychain.

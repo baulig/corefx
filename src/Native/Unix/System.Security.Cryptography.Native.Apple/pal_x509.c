@@ -5,6 +5,24 @@
 #include "pal_x509.h"
 #include "pal_utilities.h"
 
+int32_t AppleCryptoNative_X509CopyCertFromIdentity(SecIdentityRef identity, SecCertificateRef* pCertOut)
+{
+    if (pCertOut != NULL)
+        *pCertOut = NULL;
+
+    // This function handles null inputs for both identity and cert.
+    return SecIdentityCopyCertificate(identity, pCertOut);
+}
+
+int32_t AppleCryptoNative_X509CopyPrivateKeyFromIdentity(SecIdentityRef identity, SecKeyRef* pPrivateKeyOut)
+{
+    if (pPrivateKeyOut != NULL)
+        *pPrivateKeyOut = NULL;
+
+    // This function handles null inputs for both identity and key
+    return SecIdentityCopyPrivateKey(identity, pPrivateKeyOut);
+}
+
 int32_t
 AppleCryptoNative_X509DemuxAndRetainHandle(CFTypeRef handle, SecCertificateRef* pCertOut, SecIdentityRef* pIdentityOut)
 {

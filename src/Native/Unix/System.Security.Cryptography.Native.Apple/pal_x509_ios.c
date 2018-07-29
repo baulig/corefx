@@ -8,6 +8,21 @@
 #include <dlfcn.h>
 #include <pthread.h>
 
+int32_t
+AppleCryptoNative_X509GetPublicKey(SecCertificateRef cert, SecKeyRef* pPublicKeyOut, int32_t* pOSStatusOut)
+{
+    if (pPublicKeyOut != NULL)
+        *pPublicKeyOut = NULL;
+    if (pOSStatusOut != NULL)
+        *pOSStatusOut = noErr;
+
+    if (cert == NULL || pPublicKeyOut == NULL || pOSStatusOut == NULL)
+        return kErrorBadInput;
+
+    *pPublicKeyOut = SecCertificateCopyPublicKey(cert);
+    return 1;
+}
+
 static OSStatus ImportCertificatePKCS12(CFDataRef cfData, CFStringRef cfPfxPassphrase, CFArrayRef *outItems)
 {
     const void *keys[1], *values[1];
@@ -197,5 +212,20 @@ int32_t AppleCryptoNative_X509ImportCertificate(uint8_t* pbData,
     }
 
     return ret;
+}
+
+int32_t AppleCryptoNative_X509GetRawData(SecCertificateRef cert, CFDataRef* ppDataOut, int32_t* pOSStatus)
+{
+    if (ppDataOut != NULL)
+        *ppDataOut = NULL;
+    if (pOSStatus != NULL)
+        *pOSStatus = noErr;
+
+    if (cert == NULL || ppDataOut == NULL || pOSStatus == NULL)
+        return kErrorBadInput;
+
+    *ppDataOut = SecCertificateCopyData(cert);
+    *pOSStatus = 0;
+    return 1;
 }
 

@@ -22,7 +22,6 @@ AppleCryptoNative_X509GetPublicKey(SecCertificateRef cert, SecKeyRef* pPublicKey
     return (*pOSStatusOut == noErr);
 }
 
-#if !TARGET_OS_IPHONE
 PAL_X509ContentType AppleCryptoNative_X509GetContentType(uint8_t* pbData, int32_t cbData)
 {
     if (pbData == NULL || cbData < 0)
@@ -118,7 +117,6 @@ PAL_X509ContentType AppleCryptoNative_X509GetContentType(uint8_t* pbData, int32_
 
     return PAL_X509Unknown;
 }
-#endif
 
 static int32_t ProcessCertificateTypeReturn(CFArrayRef items, SecCertificateRef* pCertOut, SecIdentityRef* pIdentityOut)
 {
@@ -176,24 +174,6 @@ static int32_t ProcessCertificateTypeReturn(CFArrayRef items, SecCertificateRef*
     }
 
     return -19;
-}
-
-int32_t AppleCryptoNative_X509CopyCertFromIdentity(SecIdentityRef identity, SecCertificateRef* pCertOut)
-{
-    if (pCertOut != NULL)
-        *pCertOut = NULL;
-
-    // This function handles null inputs for both identity and cert.
-    return SecIdentityCopyCertificate(identity, pCertOut);
-}
-
-int32_t AppleCryptoNative_X509CopyPrivateKeyFromIdentity(SecIdentityRef identity, SecKeyRef* pPrivateKeyOut)
-{
-    if (pPrivateKeyOut != NULL)
-        *pPrivateKeyOut = NULL;
-
-    // This function handles null inputs for both identity and key
-    return SecIdentityCopyPrivateKey(identity, pPrivateKeyOut);
 }
 
 static int32_t ReadX509(uint8_t* pbData,
