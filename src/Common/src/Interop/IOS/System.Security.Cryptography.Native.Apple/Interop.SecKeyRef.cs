@@ -17,10 +17,19 @@ internal static partial class Interop
         private static readonly SafeCreateHandle s_nullExportString = new SafeCreateHandle();
 
         [DllImport(Libraries.AppleCryptoNative)]
+        private static extern SafeSecKeyRefHandle AppleCryptoNative_SecKeyImportEphemeral(
+            byte[] pbKeyBlob,
+            int cbKeyBlob,
+            int isPrivateKey,
+            out SafeCFErrorHandle pErrorOut);
+
+        [DllImport(Libraries.AppleCryptoNative)]
         private static extern ulong AppleCryptoNative_SecKeyGetSimpleKeySizeInBytes(SafeSecKeyRefHandle publicKey);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern SafeCFDataHandle AppleCryptoNative_SecKeyExport(SafeSecKeyRefHandle pKey, out SafeCFErrorHandle pErrorOut);
+        private static extern SafeCFDataHandle AppleCryptoNative_SecKeyExport(
+            SafeSecKeyRefHandle pKey,
+            out SafeCFErrorHandle pErrorOut);
 
         internal static int GetSimpleKeySizeInBits(SafeSecKeyRefHandle publicKey)
         {
@@ -30,6 +39,30 @@ internal static partial class Interop
             {
                 return (int)(keySizeInBytes * 8);
             }
+        }
+
+        internal static SafeSecKeyRefHandle ImportEphemeralKey(byte[] keyBlob, bool hasPrivateKey)
+        {
+            Debug.Assert(keyBlob != null);
+
+            SafeSecKeyRefHandle keyHandle;
+            SafeCFErrorHandle errorHandle;
+
+            keyHandle = AppleCryptoNative_SecKeyImportEphemeral(
+                keyBlob,
+                keyBlob.Length,
+                hasPrivateKey ? 1 : 0,
+                out errorHandle);
+
+            using (errorHandle)
+            {
+                if (keyHandle.IsInvalid || !errorHandle.IsInvalid)
+                {
+                    throw CreateExceptionForCFError(errorHandle);
+                }
+            }
+
+            return keyHandle;
         }
 
         internal static byte[] SecKeyExport(SafeSecKeyRefHandle key)

@@ -9,3 +9,20 @@ CFDataRef AppleCryptoNative_SecKeyExport(SecKeyRef pKey, CFErrorRef *pErrorOut)
 {
     return SecKeyCopyExternalRepresentation(pKey, pErrorOut);
 }
+
+SecKeyRef AppleCryptoNative_SecKeyImportEphemeral(
+    uint8_t* pbKeyBlob, int32_t cbKeyBlob, int32_t isPrivateKey, CFErrorRef *pErrorOut)
+{
+    CFMutableDictionaryRef attrs = CFDictionaryCreateMutable(
+        kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFDictionarySetValue(attrs, kSecAttrKeyType, kSecAttrKeyTypeRSA);
+    CFDictionarySetValue(attrs, kSecAttrKeyClass, isPrivateKey ? kSecAttrKeyClassPrivate : kSecAttrKeyClassPublic);
+   //  CFDictionarySetValue(attrs, kSecAttrKeySizeInBits, 0);
+
+    CFDataRef data = CFDataCreateWithBytesNoCopy(NULL, pbKeyBlob, cbKeyBlob, kCFAllocatorNull);
+    SecKeyRef key = SecKeyCreateWithData(data, attrs, pErrorOut);
+    CFRelease(data);
+    CFRelease(attrs);
+    return key;
+}
+

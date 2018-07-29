@@ -34,11 +34,6 @@ namespace System.Security.Cryptography
                 return parameters;
             }
 
-            public override void ImportParameters(RSAParameters parameters)
-            {
-                throw new NotImplementedException ();
-            }
-
             public override byte[] Encrypt(byte[] data, RSAEncryptionPadding padding)
             {
                 throw new NotImplementedException ();

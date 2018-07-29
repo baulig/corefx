@@ -158,6 +158,52 @@ namespace System.Security.Cryptography
                     KeySizeValue = Interop.AppleCrypto.GetSimpleKeySizeInBits(newKeyPair.PublicKey);
                 }
             }
+
+            public override void ImportParameters(RSAParameters parameters)
+            {
+                bool isPrivateKey = parameters.D != null;
+
+                if (isPrivateKey)
+                {
+                    // Start with the private key, in case some of the private key fields
+                    // don't match the public key fields.
+                    //
+                    // Public import should go off without a hitch.
+                    SafeSecKeyRefHandle privateKey = ImportKey(parameters);
+
+                    RSAParameters publicOnly = new RSAParameters
+                    {
+                        Modulus = parameters.Modulus,
+                        Exponent = parameters.Exponent,
+                    };
+
+                    SafeSecKeyRefHandle publicKey;
+                    try
+                    {
+                        publicKey = ImportKey(publicOnly);
+                    }
+                    catch
+                    {
+                        privateKey.Dispose();
+                        throw;
+                    }
+
+                    SetKey(SecKeyPair.PublicPrivatePair(publicKey, privateKey));
+                }
+                else
+                {
+                    SafeSecKeyRefHandle publicKey = ImportKey(parameters);
+                    SetKey(SecKeyPair.PublicOnly(publicKey));
+                }
+            }
+
+            private static SafeSecKeyRefHandle ImportKey(RSAParameters parameters)
+            {
+                bool isPrivateKey = parameters.D != null;
+                byte[] pkcs1Blob = isPrivateKey ? parameters.ToPkcs1Blob() : parameters.ToSubjectPublicKeyInfo();
+
+                return Interop.AppleCrypto.ImportEphemeralKey(pkcs1Blob, isPrivateKey);
+            }
         }
 
         private static Exception HashAlgorithmNameNullOrEmpty() =>

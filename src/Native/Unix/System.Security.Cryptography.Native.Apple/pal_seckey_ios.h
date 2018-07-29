@@ -8,3 +8,5 @@
 
 DLLEXPORT CFDataRef AppleCryptoNative_SecKeyExport(SecKeyRef pKey, CFErrorRef *pErrorOut);
 
+DLLEXPORT SecKeyRef AppleCryptoNative_SecKeyImportEphemeral(
+    uint8_t* pbKeyBlob, int32_t cbKeyBlob, int32_t isPrivateKey, CFErrorRef *pErrorOut);
