@@ -45,7 +45,7 @@ namespace Internal.Cryptography.Pal
                 }
                 if ((keyStorageFlags & X509KeyStorageFlags.PersistKeySet) == X509KeyStorageFlags.PersistKeySet)
                 {
-                    throw new PlatformNotSupportedException("Not available on mobile.");
+                    throw new PlatformNotSupportedException(SR.Cryptography_NotAvailableOnMobile);
                 }
             }
             else

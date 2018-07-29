@@ -184,6 +184,9 @@
   <data name="Cryptography_KeyTooSmall" xml:space="preserve">
     <value>The key is too small for the requested operation.</value>
   </data>
+  <data name="Cryptography_NotAvailableOnMobile" xml:space="preserve">
+    <value>Feature is not available on Mobile.</value>
+  </data>
   <data name="Cryptography_OAEP_Decryption_Failed" xml:space="preserve">
     <value>Error occurred while decoding OAEP padding.</value>
   </data>
