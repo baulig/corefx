@@ -15,34 +15,99 @@ namespace Internal.Cryptography.Pal
 {
     internal sealed partial class AppleCertificatePal
     {
+        public static ICertificatePal FromBlob(
+            byte[] rawData,
+            SafePasswordHandle password,
+            X509KeyStorageFlags keyStorageFlags)
+        {
+            Debug.Assert(password != null);
+
+            X509ContentType contentType = X509Certificate2.GetCertContentType(rawData);
+
+            if (contentType == X509ContentType.Pkcs7)
+            {
+                // In single mode for a PKCS#7 signed or signed-and-enveloped file we're supposed to return
+                // the certificate which signed the PKCS#7 file.
+                // 
+                // X509Certificate2Collection::Export(X509ContentType.Pkcs7) claims to be a signed PKCS#7,
+                // but doesn't emit a signature block. So this is hard to test.
+                //
+                // TODO(2910): Figure out how to extract the signing certificate, when it's present.
+                throw new CryptographicException(SR.Cryptography_X509_PKCS7_NoSigner);
+            }
+
+
+            if (contentType == X509ContentType.Pkcs12)
+            {
+                if ((keyStorageFlags & X509KeyStorageFlags.EphemeralKeySet) == X509KeyStorageFlags.EphemeralKeySet)
+                {
+                    throw new PlatformNotSupportedException(SR.Cryptography_X509_NoEphemeralPfx);
+                }
+                if ((keyStorageFlags & X509KeyStorageFlags.PersistKeySet) == X509KeyStorageFlags.PersistKeySet)
+                {
+                    throw new PlatformNotSupportedException("Not available on mobile.");
+                }
+            }
+            else
+            {
+                password = SafePasswordHandle.InvalidHandle;
+            }
+
+            SafeSecIdentityHandle identityHandle;
+            SafeSecCertificateHandle certHandle = Interop.AppleCrypto.X509ImportCertificate(
+                rawData,
+                contentType,
+                password,
+                out identityHandle);
+
+            if (identityHandle.IsInvalid)
+            {
+                identityHandle.Dispose();
+                return new AppleCertificatePal(certHandle);
+            }
+
+            if (contentType != X509ContentType.Pkcs12)
+            {
+                Debug.Fail("Non-PKCS12 import produced an identity handle");
+
+                identityHandle.Dispose();
+                certHandle.Dispose();
+                throw new CryptographicException();
+            }
+
+            Debug.Assert(certHandle.IsInvalid);
+            certHandle.Dispose();
+            return new AppleCertificatePal(identityHandle);
+        }
+
         public RSA GetRSAPrivateKey()
         {
-            throw new PlatformNotSupportedException();
+            throw new NotImplementedException();
         }
 
         public DSA GetDSAPrivateKey()
         {
-            throw new PlatformNotSupportedException();
+            throw new NotImplementedException();
         }
 
         public ECDsa GetECDsaPrivateKey()
         {
-            throw new PlatformNotSupportedException();
+            throw new NotImplementedException();
         }
 
         public ICertificatePal CopyWithPrivateKey(DSA privateKey)
         {
-            throw new PlatformNotSupportedException();
+            throw new NotImplementedException();
         }
 
         public ICertificatePal CopyWithPrivateKey(ECDsa privateKey)
         {
-            throw new PlatformNotSupportedException();
+            throw new NotImplementedException();
         }
 
         public ICertificatePal CopyWithPrivateKey(RSA privateKey)
         {
-            throw new PlatformNotSupportedException();
+            throw new NotImplementedException();
         }
 
         private ICertificatePal CopyWithPrivateKey(SecKeyPair keyPair)
@@ -92,6 +157,11 @@ namespace Internal.Cryptography.Pal
                 AppleCertificatePal newPal = new AppleCertificatePal(identityHandle);
                 return newPal;
             }
+        }
+
+        public byte[] Export(X509ContentType contentType, SafePasswordHandle password)
+        {
+            throw new NotImplementedException();
         }
     }
 }
