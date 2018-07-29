@@ -13,212 +13,8 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Internal.Cryptography.Pal
 {
-    internal sealed class AppleCertificatePal : ICertificatePal
+    internal sealed partial class AppleCertificatePal
     {
-        private SafeSecIdentityHandle _identityHandle;
-        private SafeSecCertificateHandle _certHandle;
-        private CertificateData _certData;
-        private bool _readCertData;
-
-        internal AppleCertificatePal(SafeSecCertificateHandle certHandle)
-        {
-            Debug.Assert(!certHandle.IsInvalid);
-
-            _certHandle = certHandle;
-        }
-
-        internal AppleCertificatePal(SafeSecIdentityHandle identityHandle)
-        {
-            Debug.Assert(!identityHandle.IsInvalid);
-
-            _identityHandle = identityHandle;
-            _certHandle = Interop.AppleCrypto.X509GetCertFromIdentity(identityHandle);
-        }
-
-        public void Dispose()
-        {
-            _certHandle?.Dispose();
-            _identityHandle?.Dispose();
-
-            _certHandle = null;
-            _identityHandle = null;
-        }
-
-        internal SafeSecCertificateHandle CertificateHandle => _certHandle;
-        internal SafeSecIdentityHandle IdentityHandle => _identityHandle;
-
-        public bool HasPrivateKey => !(_identityHandle?.IsInvalid ?? true);
-
-        public IntPtr Handle
-        {
-            get
-            {
-                if (HasPrivateKey)
-                {
-                    return _identityHandle.DangerousGetHandle();
-                }
-
-                return _certHandle?.DangerousGetHandle() ?? IntPtr.Zero;
-            }
-        }
-
-
-        public string Issuer => IssuerName.Name;
-
-        public string Subject => SubjectName.Name;
-
-        public string KeyAlgorithm
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.PublicKeyAlgorithm.AlgorithmId;
-            }
-        }
-
-        public byte[] KeyAlgorithmParameters
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.PublicKeyAlgorithm.Parameters;
-            }
-        }
-
-        public byte[] PublicKeyValue
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.PublicKey;
-            }
-        }
-
-        public byte[] SerialNumber
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.SerialNumber;
-            }
-        }
-
-        public string SignatureAlgorithm
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.SignatureAlgorithm.AlgorithmId;
-            }
-        }
-
-        public string FriendlyName
-        {
-            get { return ""; }
-            set
-            {
-                throw new PlatformNotSupportedException(
-                    SR.Format(SR.Cryptography_Unix_X509_PropertyNotSettable, nameof(FriendlyName)));
-            }
-        }
-
-        public int Version
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.Version + 1;
-            }
-        }
-
-        public X500DistinguishedName SubjectName
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.Subject;
-            }
-        }
-
-        public X500DistinguishedName IssuerName
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.Issuer;
-            }
-        }
-
-        public IEnumerable<X509Extension> Extensions {
-            get
-            {
-                EnsureCertData();
-                return _certData.Extensions;
-            }
-        }
-
-        public byte[] RawData
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.RawData;
-            }
-        }
-
-        public DateTime NotAfter
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.NotAfter.ToLocalTime();
-            }
-        }
-
-        public DateTime NotBefore
-        {
-            get
-            {
-                EnsureCertData();
-                return _certData.NotBefore.ToLocalTime();
-            }
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA5350",
-            Justification = "SHA1 is required for Compat")]
-        public byte[] Thumbprint
-        {
-            get
-            {
-                EnsureCertData();
-
-                using (SHA1 hash = SHA1.Create())
-                {
-                    return hash.ComputeHash(_certData.RawData);
-                }
-            }
-        }
-
-        public bool Archived
-        {
-            get { return false; }
-            set
-            {
-                throw new PlatformNotSupportedException(
-                    SR.Format(SR.Cryptography_Unix_X509_PropertyNotSettable, nameof(Archived)));
-            }
-        }
-
-        public byte[] SubjectPublicKeyInfo
-        {
-            get
-            {
-                EnsureCertData();
-
-                return _certData.SubjectPublicKeyInfo;
-            }
-        }
-
         public RSA GetRSAPrivateKey()
         {
             if (_identityHandle == null)
@@ -227,6 +23,7 @@ namespace Internal.Cryptography.Pal
             Debug.Assert(!_identityHandle.IsInvalid);
             SafeSecKeyRefHandle publicKey = Interop.AppleCrypto.X509GetPublicKey(_certHandle);
             SafeSecKeyRefHandle privateKey = Interop.AppleCrypto.X509GetPrivateKeyFromIdentity(_identityHandle);
+            Debug.Assert(!publicKey.IsInvalid);
 
             return new RSAImplementation.RSASecurityTransforms(publicKey, privateKey);
         }
@@ -240,6 +37,12 @@ namespace Internal.Cryptography.Pal
             SafeSecKeyRefHandle publicKey = Interop.AppleCrypto.X509GetPublicKey(_certHandle);
             SafeSecKeyRefHandle privateKey = Interop.AppleCrypto.X509GetPrivateKeyFromIdentity(_identityHandle);
 
+            if (publicKey.IsInvalid)
+            {
+                // SecCertificateCopyKey returns null for DSA, so fall back to manually building it.
+                publicKey = Interop.AppleCrypto.ImportEphemeralKey(_certData.SubjectPublicKeyInfo, false);
+            }
+
             return new DSAImplementation.DSASecurityTransforms(publicKey, privateKey);
         }
 
@@ -251,6 +54,7 @@ namespace Internal.Cryptography.Pal
             Debug.Assert(!_identityHandle.IsInvalid);
             SafeSecKeyRefHandle publicKey = Interop.AppleCrypto.X509GetPublicKey(_certHandle);
             SafeSecKeyRefHandle privateKey = Interop.AppleCrypto.X509GetPrivateKeyFromIdentity(_identityHandle);
+            Debug.Assert(!publicKey.IsInvalid);
 
             return new ECDsaImplementation.ECDsaSecurityTransforms(publicKey, privateKey);
         }
@@ -326,6 +130,18 @@ namespace Internal.Cryptography.Pal
                 throw new CryptographicException(SR.Cryptography_CSP_NoPrivateKey);
             }
 
+            SafeKeychainHandle keychain = Interop.AppleCrypto.SecKeychainItemCopyKeychain(keyPair.PrivateKey);
+
+            // If we're using a key already in a keychain don't add the certificate to that keychain here,
+            // do it in the temporary add/remove in the shim.
+            SafeKeychainHandle cloneKeychain = SafeTemporaryKeychainHandle.InvalidHandle;
+
+            if (keychain.IsInvalid)
+            {
+                keychain = Interop.AppleCrypto.CreateTemporaryKeychain();
+                cloneKeychain = keychain;
+            }
+
             // Because SecIdentityRef only has private constructors we need to have the cert and the key
             // in the same keychain.  That almost certainly means we're going to need to add this cert to a
             // keychain, and when a cert that isn't part of a keychain gets added to a keychain then the
@@ -342,11 +158,14 @@ namespace Internal.Cryptography.Pal
 
             {
                 byte[] export = RawData;
+                const bool exportable = false;
                 SafeSecIdentityHandle identityHandle;
                 tempHandle = Interop.AppleCrypto.X509ImportCertificate(
                     export,
                     X509ContentType.Cert,
                     SafePasswordHandle.InvalidHandle,
+                    cloneKeychain,
+                    exportable,
                     out identityHandle);
 
                 Debug.Assert(identityHandle.IsInvalid, "identityHandle should be IsInvalid");
@@ -355,45 +174,17 @@ namespace Internal.Cryptography.Pal
                 Debug.Assert(!tempHandle.IsInvalid, "tempHandle should not be IsInvalid");
             }
 
+            using (keychain)
             using (tempHandle)
             {
                 SafeSecIdentityHandle identityHandle = Interop.AppleCrypto.X509CopyWithPrivateKey(
                     tempHandle,
-                    keyPair.PrivateKey);
+                    keyPair.PrivateKey,
+                    keychain);
 
                 AppleCertificatePal newPal = new AppleCertificatePal(identityHandle);
                 return newPal;
             }
         }
-
-        public string GetNameInfo(X509NameType nameType, bool forIssuer)
-        {
-            EnsureCertData();
-            return _certData.GetNameInfo(nameType, forIssuer);
-        }
-
-        public void AppendPrivateKeyInfo(StringBuilder sb)
-        {
-            if (!HasPrivateKey)
-            {
-                return;
-            }
-
-            // There's nothing really to say about the key, just acknowledge there is one.
-            sb.AppendLine();
-            sb.AppendLine();
-            sb.AppendLine("[Private Key]");
-        }
-
-        private void EnsureCertData()
-        {
-            if (_readCertData)
-                return;
-
-            Debug.Assert(!_certHandle.IsInvalid);
-            _certData = new CertificateData(Interop.AppleCrypto.X509GetRawData(_certHandle));
-            _readCertData = true;
-        }
-
     }
 }
