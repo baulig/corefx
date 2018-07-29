@@ -24,3 +24,5 @@ DLLEXPORT int32_t AppleCryptoNative_X509ImportCertificate(uint8_t* pbData,
 
 DLLEXPORT int32_t AppleCryptoNative_X509GetRawData(SecCertificateRef cert, CFDataRef* ppDataOut, int32_t* pOSStatus);
 
+DLLEXPORT SecIdentityRef
+AppleCryptoNative_X509CopyWithPrivateKey(SecCertificateRef cert, SecKeyRef privateKey);

@@ -54,11 +54,9 @@ internal static partial class Interop
             out SafeSecIdentityHandle identityHandle);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_X509CopyWithPrivateKey(
+        private static extern SafeSecIdentityHandle AppleCryptoNative_X509CopyWithPrivateKey(
             SafeSecCertificateHandle certHandle,
-            SafeSecKeyRefHandle privateKeyHandle,
-            out SafeSecIdentityHandle pIdentityHandleOut,
-            out int pOSStatus);
+            SafeSecKeyRefHandle privateKeyHandle);
 
         internal static byte[] X509GetRawData(SafeSecCertificateHandle cert)
         {
@@ -233,30 +231,9 @@ internal static partial class Interop
             SafeSecCertificateHandle certHandle,
             SafeSecKeyRefHandle privateKeyHandle)
         {
-            SafeSecIdentityHandle identityHandle;
-            int osStatus;
-
-            int result = AppleCryptoNative_X509CopyWithPrivateKey(
-                certHandle,
-                privateKeyHandle,
-                out identityHandle,
-                out osStatus);
-
-            if (result == 1)
-            {
-                Debug.Assert(!identityHandle.IsInvalid);
-                return identityHandle;
-            }
-
-            identityHandle.Dispose();
-
-            if (result == 0)
-            {
-                throw CreateExceptionForOSStatus(osStatus);
-            }
-
-            Debug.Fail($"AppleCryptoNative_X509CopyWithPrivateKey returned {result}");
-            throw new CryptographicException();
+            SafeSecIdentityHandle identityHandle = AppleCryptoNative_X509CopyWithPrivateKey(certHandle, privateKeyHandle);
+            Debug.Assert(!identityHandle.IsInvalid);
+            return identityHandle;
         }
     }
 }
@@ -296,4 +273,24 @@ namespace System.Security.Cryptography.X509Certificates
 
         public override bool IsInvalid => handle == IntPtr.Zero;
     }
+}
+
+namespace System.Security.Cryptography.Apple
+{
+    internal sealed partial class SafeSecKeyRefHandle : SafeHandle
+    {
+        internal SafeSecKeyRefHandle ()
+            : base (IntPtr.Zero, ownsHandle: true)
+        {
+        }
+
+        protected override bool ReleaseHandle ()
+        {
+            Interop.CoreFoundation.CFRelease (handle);
+            SetHandle (IntPtr.Zero);
+            return true;
+        }
+
+        public override bool IsInvalid => handle == IntPtr.Zero;
+    }    
 }

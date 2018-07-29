@@ -229,3 +229,14 @@ int32_t AppleCryptoNative_X509GetRawData(SecCertificateRef cert, CFDataRef* ppDa
     return 1;
 }
 
+extern SecIdentityRef SecIdentityCreate(CFAllocatorRef allocator, SecCertificateRef certificate, SecKeyRef privateKey);
+
+SecIdentityRef AppleCryptoNative_X509CopyWithPrivateKey(SecCertificateRef cert, SecKeyRef privateKey)
+{
+    if (cert == NULL || privateKey == NULL)
+    {
+        return NULL;
+    }
+
+    return SecIdentityCreate(NULL, cert, privateKey);
+}
