@@ -6,3 +6,5 @@
 
 #include "pal_seckey.h"
 
+DLLEXPORT CFDataRef AppleCryptoNative_SecKeyExport(SecKeyRef pKey, CFErrorRef *pErrorOut);
+
