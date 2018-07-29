@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Apple;
 using Microsoft.Win32.SafeHandles;
+using Internal.Cryptography;
 
 internal static partial class Interop
 {
@@ -31,12 +32,8 @@ internal static partial class Interop
             }
         }
 
-        internal static DerSequenceReader SecKeyExport(
-            SafeSecKeyRefHandle key,
-            bool exportPrivate)
+        internal static byte[] SecKeyExport(SafeSecKeyRefHandle key)
         {
-            byte[] exportedData;
-
             var cfData = AppleCryptoNative_SecKeyExport(key, out var cfError);
             using (cfData)
             using (cfError)
@@ -46,35 +43,8 @@ internal static partial class Interop
                     throw CreateExceptionForCFError(cfError);
                 }
 
-                exportedData = CoreFoundation.CFGetData(cfData);
+                return CoreFoundation.CFGetData(cfData);
             }
-
-            DerSequenceReader reader = new DerSequenceReader(exportedData);
-
-            if (!exportPrivate)
-            {
-                return reader;
-            }
-
-            byte tag = reader.PeekTag();
-
-            // PKCS#8 defines two structures, PrivateKeyInfo, which starts with an integer,
-            // and EncryptedPrivateKey, which starts with an encryption algorithm (DER sequence).
-            if (tag == (byte)DerSequenceReader.DerTag.Integer)
-            {
-                return reader;
-            }
-
-            const byte ConstructedSequence =
-                DerSequenceReader.ConstructedFlag | (byte)DerSequenceReader.DerTag.Sequence;
-
-            if (tag == ConstructedSequence)
-            {
-                // return ReadEncryptedPkcs8Blob(ExportPassword, reader);
-            }
-
-            Debug.Fail($"Data was neither PrivateKey or EncryptedPrivateKey: {tag:X2}");
-            throw new CryptographicException();
         }
     }
 }
