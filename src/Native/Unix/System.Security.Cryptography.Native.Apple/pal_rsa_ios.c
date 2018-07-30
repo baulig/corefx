@@ -52,7 +52,7 @@ int32_t AppleCryptoNative_RsaEncryptPkcs(
     }
 
     *pOSStatus = SecKeyEncrypt(secKeyRef, kSecPaddingPKCS1, pbData, cbData, pbCipherOut, cbCipherLen);
-    return *pOSStatus = noErr;
+    return *pOSStatus == noErr;
 }
 
 int32_t AppleCryptoNative_RsaEncryptOaep(
@@ -64,7 +64,7 @@ int32_t AppleCryptoNative_RsaEncryptOaep(
     }
 
     *pOSStatus = SecKeyEncrypt(secKeyRef, kSecPaddingOAEP, pbData, cbData, pbCipherOut, cbCipherLen);
-    return *pOSStatus = noErr;
+    return *pOSStatus == noErr;
 }
 
 int32_t AppleCryptoNative_RsaDecryptPkcs(
@@ -76,7 +76,7 @@ int32_t AppleCryptoNative_RsaDecryptPkcs(
     }
 
     *pOSStatus = SecKeyDecrypt(secKeyRef, kSecPaddingPKCS1, pbData, cbData, pbPlainOut, cbPlainLen);
-    return *pOSStatus = noErr;
+    return *pOSStatus == noErr;
 }
 
 int32_t AppleCryptoNative_RsaDecryptOaep(
@@ -88,5 +88,5 @@ int32_t AppleCryptoNative_RsaDecryptOaep(
     }
 
     *pOSStatus = SecKeyDecrypt(secKeyRef, kSecPaddingOAEP, pbData, cbData, pbPlainOut, cbPlainLen);
-    return *pOSStatus = noErr;
+    return *pOSStatus == noErr;
 }

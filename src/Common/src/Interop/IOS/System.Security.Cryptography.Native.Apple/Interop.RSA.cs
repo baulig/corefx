@@ -91,6 +91,40 @@ internal static partial class Interop
             }
         }
 
+        private delegate int SecKeyTransform(
+            SafeSecKeyRefHandle publicKey,
+            ref byte pbData,
+            int cbData,
+            ref byte pbPlainOut,
+            ref int cbPlainLen,
+            out int pOSStatus);
+
+        private static bool TryExecuteTransform(
+            SafeSecKeyRefHandle publicKey,
+            ReadOnlySpan<byte> source,
+            Span<byte> destination,
+            RSAEncryptionPadding padding,
+            out int bytesWritten,
+            SecKeyTransform transform)
+        {
+            int osStatus;
+            bytesWritten = destination.Length;
+            int ret = transform (
+                    publicKey,
+                    ref MemoryMarshal.GetReference(source),
+                    source.Length,
+                    ref MemoryMarshal.GetReference(destination),
+                    ref bytesWritten,
+                    out osStatus);
+
+            if (ret == 1)
+            {
+                return true;
+            }
+
+            throw CreateExceptionForOSStatus(osStatus);
+        }
+
         internal static bool TryRsaEncrypt(
             SafeSecKeyRefHandle publicKey,
             ReadOnlySpan<byte> source,
@@ -98,95 +132,45 @@ internal static partial class Interop
             RSAEncryptionPadding padding,
             out int bytesWritten)
         {
-            int osStatus, result;
-            bytesWritten = destination.Length;
             Debug.Assert(padding.Mode == RSAEncryptionPaddingMode.Pkcs1 || padding.Mode == RSAEncryptionPaddingMode.Oaep);
             if (padding.Mode == RSAEncryptionPaddingMode.Pkcs1)
             {
-                result = AppleCryptoNative_RsaEncryptPkcs(
-                    publicKey,
-                    ref MemoryMarshal.GetReference(source),
-                    source.Length,
-                    ref MemoryMarshal.GetReference(destination),
-                    ref bytesWritten,
-                    out osStatus);
+                return TryExecuteTransform(
+                        publicKey, source, destination, padding, out bytesWritten, AppleCryptoNative_RsaEncryptPkcs);
             }
             else if (padding.Mode == RSAEncryptionPaddingMode.Oaep)
             {
-                result = AppleCryptoNative_RsaEncryptOaep(
-                    publicKey,
-                    ref MemoryMarshal.GetReference(source),
-                    source.Length,
-                    ref MemoryMarshal.GetReference(destination),
-                    ref bytesWritten,
-                    out osStatus);
+                return TryExecuteTransform(
+                        publicKey, source, destination, padding, out bytesWritten, AppleCryptoNative_RsaEncryptOaep);
             }
             else
             {
                 throw new CryptographicException();
             }
-
-            if (result == 0)
-            {
-                throw CreateExceptionForOSStatus(osStatus);
-            }
-
-            if (result == 1)
-            {
-                return true;
-            }
-
-            Debug.Fail($"Unexpected result from AppleCryptoNative_RsaGenerateKey: {result}");
-            throw new CryptographicException();
         }
 
         internal static bool TryRsaDecrypt(
-            SafeSecKeyRefHandle publicKey,
+            SafeSecKeyRefHandle privateKey,
             ReadOnlySpan<byte> source,
             Span<byte> destination,
             RSAEncryptionPadding padding,
             out int bytesWritten)
         {
-            int osStatus, result;
-            bytesWritten = destination.Length;
             Debug.Assert(padding.Mode == RSAEncryptionPaddingMode.Pkcs1 || padding.Mode == RSAEncryptionPaddingMode.Oaep);
             if (padding.Mode == RSAEncryptionPaddingMode.Pkcs1)
             {
-                result = AppleCryptoNative_RsaDecryptPkcs(
-                    publicKey,
-                    ref MemoryMarshal.GetReference(source),
-                    source.Length,
-                    ref MemoryMarshal.GetReference(destination),
-                    ref bytesWritten,
-                    out osStatus);
+                return TryExecuteTransform(
+                        privateKey, source, destination, padding, out bytesWritten, AppleCryptoNative_RsaDecryptPkcs);
             }
             else if (padding.Mode == RSAEncryptionPaddingMode.Oaep)
             {
-                result = AppleCryptoNative_RsaDecryptOaep(
-                    publicKey,
-                    ref MemoryMarshal.GetReference(source),
-                    source.Length,
-                    ref MemoryMarshal.GetReference(destination),
-                    ref bytesWritten,
-                    out osStatus);
+                return TryExecuteTransform(
+                        privateKey, source, destination, padding, out bytesWritten, AppleCryptoNative_RsaDecryptOaep);
             }
             else
             {
                 throw new CryptographicException();
             }
-
-            if (result == 0)
-            {
-                throw CreateExceptionForOSStatus(osStatus);
-            }
-
-            if (result == 1)
-            {
-                return true;
-            }
-
-            Debug.Fail($"Unexpected result from AppleCryptoNative_RsaGenerateKey: {result}");
-            throw new CryptographicException();
         }
 
         internal static byte[] RsaDecrypt(
@@ -194,7 +178,19 @@ internal static partial class Interop
             byte[] data,
             RSAEncryptionPadding padding)
         {
-            throw new NotImplementedException();
+            var output = new byte[data.Length];
+            int bytesWritten;
+            if (!TryRsaDecrypt(privateKey, data, output, padding, out bytesWritten))
+            {
+                throw new CryptographicException();
+            }
+            if (bytesWritten == output.Length)
+            {
+                return output;
+            }
+            var array = new byte[bytesWritten];
+            Buffer.BlockCopy(output, 0, array, 0, bytesWritten);
+            return array;
         }
     }
 }
