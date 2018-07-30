@@ -23,3 +23,24 @@ DLLEXPORT int32_t AppleCryptoNative_RsaEncryptPkcs(SecKeyRef SecKeyRef,
                                                    size_t *cbCipherLen,
                                                    int32_t* pOSStatus);
 
+DLLEXPORT int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef SecKeyRef,
+                                                   uint8_t* pbData,
+                                                   int32_t cbData,
+                                                   uint8_t* pbCipherOut,
+                                                   size_t *cbCipherLen,
+                                                   int32_t* pOSStatus);
+
+DLLEXPORT int32_t AppleCryptoNative_RsaDecryptPkcs(SecKeyRef secKeyRef,
+                                                   uint8_t* pbData,
+                                                   int32_t cbData,
+                                                   uint8_t* pbPlainOut,
+                                                   size_t *cbPlainLen,
+                                                   int32_t* pOSStatus);
+
+DLLEXPORT int32_t AppleCryptoNative_RsaDecryptOaep(SecKeyRef secKeyRef,
+                                                   uint8_t* pbData,
+                                                   int32_t cbData,
+                                                   uint8_t* pbPlainOut,
+                                                   size_t *cbPlainLen,
+                                                   int32_t* pOSStatus);
+

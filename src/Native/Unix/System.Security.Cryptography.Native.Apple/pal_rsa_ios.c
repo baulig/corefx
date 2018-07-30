@@ -46,12 +46,47 @@ int32_t AppleCryptoNative_RsaGenerateKey(
 int32_t AppleCryptoNative_RsaEncryptPkcs(
     SecKeyRef secKeyRef, uint8_t* pbData, int32_t cbData, uint8_t* pbCipherOut, size_t *cbCipherLen, int32_t* pOSStatus)
 {
-    fprintf (stderr, "RSA ENCRYPT PKCS!\n");
     if (pbData == NULL || cbData < 0 || pbCipherOut == NULL || cbCipherLen == NULL || *cbCipherLen < 0 || pOSStatus == NULL)
     {
         return kErrorBadInput;
     }
 
     *pOSStatus = SecKeyEncrypt(secKeyRef, kSecPaddingPKCS1, pbData, cbData, pbCipherOut, cbCipherLen);
-    return 1;
+    return *pOSStatus = noErr;
+}
+
+int32_t AppleCryptoNative_RsaEncryptOaep(
+    SecKeyRef secKeyRef, uint8_t* pbData, int32_t cbData, uint8_t* pbCipherOut, size_t *cbCipherLen, int32_t* pOSStatus)
+{
+    if (pbData == NULL || cbData < 0 || pbCipherOut == NULL || cbCipherLen == NULL || *cbCipherLen < 0 || pOSStatus == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    *pOSStatus = SecKeyEncrypt(secKeyRef, kSecPaddingOAEP, pbData, cbData, pbCipherOut, cbCipherLen);
+    return *pOSStatus = noErr;
+}
+
+int32_t AppleCryptoNative_RsaDecryptPkcs(
+    SecKeyRef secKeyRef, uint8_t* pbData, int32_t cbData, uint8_t* pbPlainOut, size_t *cbPlainLen, int32_t* pOSStatus)
+{
+    if (pbData == NULL || cbData < 0 || pbPlainOut == NULL || cbPlainLen == NULL || *cbPlainLen < 0 || pOSStatus == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    *pOSStatus = SecKeyDecrypt(secKeyRef, kSecPaddingPKCS1, pbData, cbData, pbPlainOut, cbPlainLen);
+    return *pOSStatus = noErr;
+}
+
+int32_t AppleCryptoNative_RsaDecryptOaep(
+    SecKeyRef secKeyRef, uint8_t* pbData, int32_t cbData, uint8_t* pbPlainOut, size_t *cbPlainLen, int32_t* pOSStatus)
+{
+    if (pbData == NULL || cbData < 0 || pbPlainOut == NULL || cbPlainLen == NULL || *cbPlainLen < 0 || pOSStatus == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    *pOSStatus = SecKeyDecrypt(secKeyRef, kSecPaddingOAEP, pbData, cbData, pbPlainOut, cbPlainLen);
+    return *pOSStatus = noErr;
 }
