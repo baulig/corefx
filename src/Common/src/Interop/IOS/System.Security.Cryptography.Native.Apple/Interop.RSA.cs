@@ -55,12 +55,49 @@ internal static partial class Interop
             }
         }
 
-        private static PAL_HashAlgorithm PalAlgorithmFromAlgorithmName(HashAlgorithmName hashAlgorithmName) =>
-            hashAlgorithmName == HashAlgorithmName.MD5 ? PAL_HashAlgorithm.Md5 :
-            hashAlgorithmName == HashAlgorithmName.SHA1 ? PAL_HashAlgorithm.Sha1 :
-            hashAlgorithmName == HashAlgorithmName.SHA256 ? PAL_HashAlgorithm.Sha256 :
-            hashAlgorithmName == HashAlgorithmName.SHA384 ? PAL_HashAlgorithm.Sha384 :
-            hashAlgorithmName == HashAlgorithmName.SHA512 ? PAL_HashAlgorithm.Sha512 :
-            throw new CryptographicException(SR.Cryptography_UnknownHashAlgorithm, hashAlgorithmName.Name);
+        private static int RsaEncryptPkcs(
+            SafeSecKeyRefHandle publicKey,
+            ReadOnlySpan<byte> pbData,
+            int cbData,
+            Span<byte> pbCipherOut,
+            ref int cbCipherLen,
+            out int pOSStatus) =>
+            RsaEncryptPkcs(publicKey, ref MemoryMarshal.GetReference(pbData), cbData,
+                           ref MemoryMarshal.GetReference(pbCipherOut), ref cbCipherLen, out pOSStatus);
+
+        [DllImport(Libraries.AppleCryptoNative, EntryPoint = "AppleCryptoNative_RsaEncryptPkcs")]
+        private static extern int RsaEncryptPkcs(
+            SafeSecKeyRefHandle publicKey,
+            ref byte pbData,
+            int cbData,
+            ref byte pbCipherOut,
+            ref int cbCipherLen,
+            out int pOSStatus);
+
+        internal static bool TryRsaEncrypt(
+            SafeSecKeyRefHandle publicKey,
+            ReadOnlySpan<byte> source,
+            Span<byte> destination,
+            RSAEncryptionPadding padding,
+            out int bytesWritten)
+        {
+            int osStatus;
+            Debug.Assert(padding.Mode == RSAEncryptionPaddingMode.Pkcs1 || padding.Mode == RSAEncryptionPaddingMode.Oaep);
+            if (padding.Mode == RSAEncryptionPaddingMode.Pkcs1)
+            {
+                bytesWritten = destination.Length;
+                var result = RsaEncryptPkcs(publicKey, ref MemoryMarshal.GetReference(source), source.Length,
+                                         ref MemoryMarshal.GetReference(destination), ref bytesWritten, out osStatus);
+                if (result == 0)
+                {
+                    throw CreateExceptionForOSStatus(osStatus);
+                }
+
+                Debug.Fail($"Unexpected result from AppleCryptoNative_RsaGenerateKey: {result}");
+                throw new CryptographicException();
+            }
+
+            throw new CryptographicException();
+        }
     }
 }

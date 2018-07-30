@@ -65,7 +65,9 @@ internal static partial class Interop
             return keyHandle;
         }
 
-        internal static byte[] SecKeyExport(SafeSecKeyRefHandle key)
+        internal static DerSequenceReader SecKeyExport(
+            SafeSecKeyRefHandle key,
+            ref bool exportPrivate)
         {
             var cfData = AppleCryptoNative_SecKeyExport(key, out var cfError);
             using (cfData)
@@ -76,7 +78,9 @@ internal static partial class Interop
                     throw CreateExceptionForCFError(cfError);
                 }
 
-                return CoreFoundation.CFGetData(cfData);
+                exportPrivate = false;
+                byte[] exportedData = CoreFoundation.CFGetData(cfData);
+                return new DerSequenceReader(exportedData);
             }
         }
     }

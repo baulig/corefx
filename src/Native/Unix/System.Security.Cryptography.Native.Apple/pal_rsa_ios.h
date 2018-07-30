@@ -16,3 +16,10 @@ DLLEXPORT int32_t AppleCryptoNative_RsaGenerateKey(int32_t keySizeBits,
                                                    SecKeyRef* pPrivateKey,
                                                    int32_t* pOSStatus);
 
+DLLEXPORT int32_t AppleCryptoNative_RsaEncryptPkcs(SecKeyRef SecKeyRef,
+                                                   uint8_t* pbData,
+                                                   int32_t cbData,
+                                                   uint8_t* pbCipherOut,
+                                                   size_t *cbCipherLen,
+                                                   int32_t* pOSStatus);
+

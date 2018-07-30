@@ -43,3 +43,15 @@ int32_t AppleCryptoNative_RsaGenerateKey(
     return status == noErr;
 }
 
+int32_t AppleCryptoNative_RsaEncryptPkcs(
+    SecKeyRef secKeyRef, uint8_t* pbData, int32_t cbData, uint8_t* pbCipherOut, size_t *cbCipherLen, int32_t* pOSStatus)
+{
+    fprintf (stderr, "RSA ENCRYPT PKCS!\n");
+    if (pbData == NULL || cbData < 0 || pbCipherOut == NULL || cbCipherLen == NULL || *cbCipherLen < 0 || pOSStatus == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    *pOSStatus = SecKeyEncrypt(secKeyRef, kSecPaddingPKCS1, pbData, cbData, pbCipherOut, cbCipherLen);
+    return 1;
+}

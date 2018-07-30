@@ -24,42 +24,6 @@ namespace System.Security.Cryptography
     {
         partial class RSASecurityTransforms
         {
-            public override RSAParameters ExportParameters(bool includePrivateParameters)
-            {
-                SecKeyPair keys = GetKeys();
-
-                SafeSecKeyRefHandle keyHandle = includePrivateParameters ? keys.PrivateKey : keys.PublicKey;
-
-                if (keyHandle == null)
-                {
-                    throw new CryptographicException(SR.Cryptography_OpenInvalidHandle);
-                }
-
-                DerSequenceReader keyReader = Interop.AppleCrypto.SecKeyExport(keyHandle, includePrivateParameters);
-                RSAParameters parameters = new RSAParameters();
-
-                if (includePrivateParameters)
-                {
-                    keyReader.ReadPkcs8Blob(ref parameters);
-                }
-                else
-                {
-                    // When exporting a key handle opened from a certificate, it seems to
-                    // export as a PKCS#1 blob instead of an X509 SubjectPublicKeyInfo blob.
-                    // So, check for that.
-                    if (keyReader.PeekTag() == (byte)DerSequenceReader.DerTag.Integer)
-                    {
-                        keyReader.ReadPkcs1PublicBlob(ref parameters);
-                    }
-                    else
-                    {
-                        keyReader.ReadSubjectPublicKeyInfo(ref parameters);
-                    }
-                }
-
-                return parameters;
-            }
-
             public override byte[] Encrypt(byte[] data, RSAEncryptionPadding padding)
             {
                 if (data == null)

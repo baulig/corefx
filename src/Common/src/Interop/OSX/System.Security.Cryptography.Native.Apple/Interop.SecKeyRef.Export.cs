@@ -33,7 +33,7 @@ internal static partial class Interop
 
         internal static DerSequenceReader SecKeyExport(
             SafeSecKeyRefHandle key,
-            bool exportPrivate)
+            ref bool exportPrivate)
         {
             // Apple requires all private keys to be exported encrypted, but since we're trying to export
             // as parsed structures we will need to decrypt it for the user.
