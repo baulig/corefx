@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 #include "pal_rsa_mac.h"
+#include "pal_seckey_mac.h"
 
 static int32_t ExecuteCFDataTransform(
     SecTransformRef xform, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
