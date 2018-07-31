@@ -91,7 +91,7 @@ internal static partial class Interop
             }
         }
 
-        private delegate int SecKeyTransform(
+        private delegate int SecKeyMobileTransform(
             SafeSecKeyRefHandle publicKey,
             ref byte pbData,
             int cbData,
@@ -105,7 +105,7 @@ internal static partial class Interop
             Span<byte> destination,
             RSAEncryptionPadding padding,
             out int bytesWritten,
-            SecKeyTransform transform)
+            SecKeyMobileTransform transform)
         {
             int osStatus;
             bytesWritten = destination.Length;

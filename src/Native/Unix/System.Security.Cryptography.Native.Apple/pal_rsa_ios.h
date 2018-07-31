@@ -44,3 +44,15 @@ DLLEXPORT int32_t AppleCryptoNative_RsaDecryptOaep(SecKeyRef secKeyRef,
                                                    size_t *cbPlainLen,
                                                    int32_t* pOSStatus);
 
+DLLEXPORT int32_t AppleCryptoNative_GenerateSignature(SecKeyRef privateKey,
+                                                      uint8_t* pbDataHash,
+                                                      int32_t cbDataHash,
+                                                      CFDataRef *pSignatureOut,
+                                                      CFErrorRef *pErrorOut);
+
+DLLEXPORT int32_t AppleCryptoNative_GenerateSignatureWithHashAlgorithm(SecKeyRef privateKey,
+                                                                       uint8_t* pbDataHash,
+                                                                       int32_t cbDataHash,
+                                                                       PAL_HashAlgorithm hashAlgorithm,
+                                                                       CFDataRef *pSignatureOut,
+                                                                       CFErrorRef *pErrorOut);

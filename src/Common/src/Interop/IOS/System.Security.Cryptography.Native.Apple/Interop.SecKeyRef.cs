@@ -24,22 +24,9 @@ internal static partial class Interop
             out SafeCFErrorHandle pErrorOut);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern ulong AppleCryptoNative_SecKeyGetSimpleKeySizeInBytes(SafeSecKeyRefHandle publicKey);
-
-        [DllImport(Libraries.AppleCryptoNative)]
         private static extern SafeCFDataHandle AppleCryptoNative_SecKeyExport(
             SafeSecKeyRefHandle pKey,
             out SafeCFErrorHandle pErrorOut);
-
-        internal static int GetSimpleKeySizeInBits(SafeSecKeyRefHandle publicKey)
-        {
-            ulong keySizeInBytes = AppleCryptoNative_SecKeyGetSimpleKeySizeInBytes(publicKey);
-
-            checked
-            {
-                return (int)(keySizeInBytes * 8);
-            }
-        }
 
         internal static SafeSecKeyRefHandle ImportEphemeralKey(byte[] keyBlob, bool hasPrivateKey)
         {
