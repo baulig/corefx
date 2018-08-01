@@ -26,4 +26,4 @@ DLLEXPORT int32_t AppleCryptoNative_SecKeySign(
 
 DLLEXPORT int32_t AppleCryptoNative_SecKeyVerify(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
-    const uint8_t* pbSig, int32_t *cbSigLen, int32_t* pOSStatus);
+    uint8_t* pbSig, int32_t *cbSigLen, int32_t* pOSStatus);

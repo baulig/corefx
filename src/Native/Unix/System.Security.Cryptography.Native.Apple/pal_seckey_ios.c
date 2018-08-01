@@ -136,12 +136,8 @@ int32_t AppleCryptoNative_SecKeySign(
             return kErrorBadInput;
     }
 
-    fprintf (stderr, "SEC KEY SIGN #1: %d,%d - %p,%d - %p,%d\n", padding, nativePadding, pbData, cbData, pbSigOut, *cbSigLen);
-
     size_t sigLen = *cbSigLen;
     *pOSStatus = SecKeyRawSign(key, nativePadding, pbData, cbData, pbSigOut, &sigLen);
-
-    fprintf (stderr, "SEC KEY SIGN #2: %d - %ld\n", *pOSStatus, sigLen);
 
     if (*pOSStatus == errSecParam && *cbSigLen < SecKeyGetBlockSize(key))
     {
@@ -154,26 +150,7 @@ int32_t AppleCryptoNative_SecKeySign(
 
 int32_t AppleCryptoNative_SecKeyVerify(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
-    const uint8_t* pbSig, int32_t *cbSigLen, int32_t* pOSStatus)
+    uint8_t* pbSig, int32_t *cbSigLen, int32_t* pOSStatus)
 {
-    if (pbData == NULL || cbData < 0 || pbSig == NULL || cbSigLen == NULL || *cbSigLen < 0 || pOSStatus == NULL)
-    {
-        return kErrorBadInput;
-    }
-
-    SecPadding nativePadding;
-    switch (padding)
-    {
-        case PAL_PaddingModeNone:
-            nativePadding = kSecPaddingNone;
-            break;
-        case PAL_PaddingModePkcs1:
-            nativePadding = kSecPaddingPKCS1SHA1;
-            break;
-        default:
-            return kErrorBadInput;
-    }
-
-    *pOSStatus = SecKeyRawVerify(key, nativePadding, pbData, cbData, pbSig, *cbSigLen);
-    return *pOSStatus == noErr;
+    return AppleCryptoNative_SecKeyEncrypt(key, padding, pbData, cbData, pbSig, cbSigLen, pOSStatus);
 }
