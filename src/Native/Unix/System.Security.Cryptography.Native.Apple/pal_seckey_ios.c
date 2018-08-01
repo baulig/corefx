@@ -105,7 +105,7 @@ int32_t AppleCryptoNative_SecKeyDecrypt(
 
 int32_t AppleCryptoNative_SecKeySign(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
-    uint8_t* pbSigOut, size_t *cbSigLen, int32_t* pOSStatus)
+    uint8_t* pbSigOut, int32_t *cbSigLen, int32_t* pOSStatus)
 {
     if (pbData == NULL || cbData < 0 || pbSigOut == NULL || cbSigLen == NULL || *cbSigLen < 0 || pOSStatus == NULL)
     {
@@ -133,7 +133,7 @@ int32_t AppleCryptoNative_SecKeySign(
 
 int32_t AppleCryptoNative_SecKeyVerify(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
-    const uint8_t* pbSig, size_t *cbSigLen, int32_t* pOSStatus)
+    const uint8_t* pbSig, int32_t *cbSigLen, int32_t* pOSStatus)
 {
     if (pbData == NULL || cbData < 0 || pbSig == NULL || cbSigLen == NULL || *cbSigLen < 0 || pOSStatus == NULL)
     {
