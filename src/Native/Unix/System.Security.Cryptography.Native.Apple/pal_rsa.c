@@ -4,7 +4,11 @@
 
 #include "pal_rsa.h"
 
-#if REQUIRE_MAC_SDK_VERSION(10_12) || REQUIRE_IOS_SDK_VERSION(11_4)
+#if REQUIRE_MAC_SDK_VERSION(10_12)
+
+//
+// These APIs are also available on iOS 10
+//
 
 static int32_t RsaPrimitive(SecKeyRef key,
                             uint8_t* pbData,
