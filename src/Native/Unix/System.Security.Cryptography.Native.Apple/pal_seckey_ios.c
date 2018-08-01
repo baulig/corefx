@@ -53,7 +53,7 @@ int32_t AppleCryptoNative_SecKeyEncrypt(
     }
 
     size_t cipherLen = *cbCipherLen;
-    *pOSStatus = SecKeyEncrypt(key, nativePadding, pbData, cbData, pbCipherOut, &cipherLen);
+    *pOSStatus = SecKeyEncrypt(key, nativePadding, pbData, (size_t)cbData, pbCipherOut, &cipherLen);
     *cbCipherLen = cipherLen;
     return *pOSStatus == noErr;
 }
@@ -83,8 +83,8 @@ int32_t AppleCryptoNative_SecKeyDecrypt(
             return kErrorBadInput;
     }
 
-    size_t plainLen = *pbPlainOut;
-    *pOSStatus = SecKeyDecrypt(key, nativePadding, pbData, cbData, pbPlainOut, &plainLen);
+    size_t plainLen = *cbPlainLen;
+    *pOSStatus = SecKeyDecrypt(key, nativePadding, pbData, (size_t)cbData, pbPlainOut, &plainLen);
     *cbPlainLen = plainLen;
     return *pOSStatus == noErr;
 }
