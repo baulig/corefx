@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -123,12 +124,51 @@ internal static partial class Interop
                     ref bytesWritten,
                     out osStatus);
 
-            if (ret == 1)
+            const int True = 1;
+            const int False = 0;
+            const int kErrorSeeError = -2;
+            const int kErrorMaybeTooSmall = -5;
+
+            if (ret == kErrorMaybeTooSmall)
             {
-                return true;
+                int rsaSize = GetSimpleKeySizeInBits(key);
+                byte[] rented = ArrayPool<byte>.Shared.Rent(rsaSize);
+                Span<byte> tmp = new Span<byte>(rented, 0, rsaSize);
+
+                try
+                {
+                    bytesWritten = rsaSize;
+                    ret = transform (
+                            key,
+                            padding,
+                            ref MemoryMarshal.GetReference(source),
+                            source.Length,
+                            ref MemoryMarshal.GetReference(tmp),
+                            ref bytesWritten,
+                            out osStatus);
+                    if (ret == True)
+                    {
+                        bytesWritten = 0;
+                        return false;
+                    }
+                }
+                finally
+                {
+                    tmp.Clear();
+                    ArrayPool<byte>.Shared.Return(rented);
+                }
             }
 
-            throw CreateExceptionForOSStatus(osStatus);
+            switch (ret)
+            {
+                case True:
+                    return true;
+                case kErrorSeeError:
+                    throw CreateExceptionForOSStatus(osStatus);
+                default:
+                        Debug.Fail($"Native RSA transform returned {ret}");
+                        throw new CryptographicException();
+            }
         }
 
         internal static bool TryRsaEncrypt(

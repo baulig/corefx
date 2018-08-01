@@ -54,6 +54,12 @@ int32_t AppleCryptoNative_SecKeyEncrypt(
 
     size_t cipherLen = *cbCipherLen;
     *pOSStatus = SecKeyEncrypt(key, nativePadding, pbData, (size_t)cbData, pbCipherOut, &cipherLen);
+
+    if (*pOSStatus == errSecParam && *cbCipherLen < SecKeyGetBlockSize(key))
+    {
+        return kErrorMaybeTooSmall;
+    }
+
     *cbCipherLen = cipherLen;
     return *pOSStatus == noErr;
 }
@@ -86,9 +92,14 @@ int32_t AppleCryptoNative_SecKeyDecrypt(
     size_t plainLen = *cbPlainLen;
     *pOSStatus = SecKeyDecrypt(key, nativePadding, pbData, (size_t)cbData, pbPlainOut, &plainLen);
 
+    if (*pOSStatus == errSecParam && *cbPlainLen < SecKeyGetBlockSize(key))
+    {
+        return kErrorMaybeTooSmall;
+    }
+
     if (*pOSStatus != noErr)
     {
-        return 0;
+        return kErrorSeeError;
     }
 
     if (padding == PAL_PaddingModeNone && plainLen < *cbPlainLen)
@@ -100,7 +111,7 @@ int32_t AppleCryptoNative_SecKeyDecrypt(
     }
 
     *cbPlainLen = plainLen;
-    return *pOSStatus == noErr;
+    return 1;
 }
 
 int32_t AppleCryptoNative_SecKeySign(
@@ -127,6 +138,12 @@ int32_t AppleCryptoNative_SecKeySign(
 
     size_t sigLen = *cbSigLen;
     *pOSStatus = SecKeyRawSign(key, nativePadding, pbData, cbData, pbSigOut, &sigLen);
+
+    if (*pOSStatus == errSecParam && *cbSigLen < SecKeyGetBlockSize(key))
+    {
+        return kErrorMaybeTooSmall;
+    }
+
     *cbSigLen = sigLen;
     return *pOSStatus = noErr;
 }

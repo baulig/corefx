@@ -16,6 +16,7 @@ static const int32_t kErrorBadInput = -1;
 static const int32_t kErrorSeeError = -2;
 static const int32_t kErrorUnknownAlgorithm = -3;
 static const int32_t kErrorUnknownState = -4;
+static const int32_t kErrorMaybeTooSmall = -5;
 
 /*
 For RSA and DSA this function returns the number of bytes in "the key", which corresponds to
