@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Apple;
 using Microsoft.Win32.SafeHandles;
+using Internal.Cryptography;
 
 internal static partial class Interop
 {

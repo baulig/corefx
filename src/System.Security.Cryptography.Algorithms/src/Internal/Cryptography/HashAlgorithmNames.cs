@@ -17,7 +17,7 @@ namespace Internal.Cryptography
         public const string SHA384 = "SHA384";
         public const string SHA512 = "SHA512";
 
-        private static readonly HashSet<string> s_allNames = CreateAllNames();
+        private static readonly Dictionary<string,object> s_allNames = CreateAllNames();
 
         /// <summary>
         /// Map HashAlgorithm type to string; desktop uses CryptoConfig functionality.
@@ -44,7 +44,7 @@ namespace Internal.Cryptography
         /// </summary>
         public static string ToUpper(string hashAlgorithName)
         {
-            if (s_allNames.Contains(hashAlgorithName))
+            if (s_allNames.ContainsKey(hashAlgorithName))
             {
                 return hashAlgorithName.ToUpperInvariant();
             }
@@ -52,15 +52,15 @@ namespace Internal.Cryptography
             return hashAlgorithName;
         }
 
-        private static HashSet<string> CreateAllNames()
+        private static Dictionary<string,object> CreateAllNames()
         {
-            var allNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var allNames = new Dictionary<string,object>(StringComparer.OrdinalIgnoreCase);
 
-            allNames.Add(HashAlgorithmNames.SHA1);
-            allNames.Add(HashAlgorithmNames.SHA256);
-            allNames.Add(HashAlgorithmNames.SHA384);
-            allNames.Add(HashAlgorithmNames.SHA512);
-            allNames.Add(HashAlgorithmNames.MD5);
+            allNames.Add(HashAlgorithmNames.SHA1, null);
+            allNames.Add(HashAlgorithmNames.SHA256, null);
+            allNames.Add(HashAlgorithmNames.SHA384, null);
+            allNames.Add(HashAlgorithmNames.SHA512, null);
+            allNames.Add(HashAlgorithmNames.MD5, null);
 
             return allNames;
         }

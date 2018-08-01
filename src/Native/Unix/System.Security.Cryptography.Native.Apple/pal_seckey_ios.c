@@ -136,8 +136,12 @@ int32_t AppleCryptoNative_SecKeySign(
             return kErrorBadInput;
     }
 
+    fprintf (stderr, "SEC KEY SIGN #1: %d,%d - %p,%d - %p,%d\n", padding, nativePadding, pbData, cbData, pbSigOut, *cbSigLen);
+
     size_t sigLen = *cbSigLen;
     *pOSStatus = SecKeyRawSign(key, nativePadding, pbData, cbData, pbSigOut, &sigLen);
+
+    fprintf (stderr, "SEC KEY SIGN #2: %d - %ld\n", *pOSStatus, sigLen);
 
     if (*pOSStatus == errSecParam && *cbSigLen < SecKeyGetBlockSize(key))
     {
@@ -145,7 +149,7 @@ int32_t AppleCryptoNative_SecKeySign(
     }
 
     *cbSigLen = sigLen;
-    return *pOSStatus = noErr;
+    return *pOSStatus == noErr;
 }
 
 int32_t AppleCryptoNative_SecKeyVerify(
@@ -171,5 +175,5 @@ int32_t AppleCryptoNative_SecKeyVerify(
     }
 
     *pOSStatus = SecKeyRawVerify(key, nativePadding, pbData, cbData, pbSig, *cbSigLen);
-    return *pOSStatus = noErr;
+    return *pOSStatus == noErr;
 }
