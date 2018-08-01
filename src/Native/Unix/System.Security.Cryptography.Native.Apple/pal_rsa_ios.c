@@ -45,7 +45,7 @@ int32_t AppleCryptoNative_RsaGenerateKey(
 }
 
 int32_t AppleCryptoNative_RsaEncryptPkcs(
-    SecKeyRef secKeyRef, uint8_t* pbData, int32_t cbData, uint8_t* pbCipherOut, size_t *cbCipherLen, int32_t* pOSStatus)
+    SecKeyRef secKeyRef, const uint8_t* pbData, int32_t cbData, uint8_t* pbCipherOut, size_t *cbCipherLen, int32_t* pOSStatus)
 {
     if (pbData == NULL || cbData < 0 || pbCipherOut == NULL || cbCipherLen == NULL || *cbCipherLen < 0 || pOSStatus == NULL)
     {
@@ -57,7 +57,7 @@ int32_t AppleCryptoNative_RsaEncryptPkcs(
 }
 
 int32_t AppleCryptoNative_RsaEncryptOaep(
-    SecKeyRef secKeyRef, uint8_t* pbData, int32_t cbData, uint8_t* pbCipherOut, size_t *cbCipherLen, int32_t* pOSStatus)
+    SecKeyRef secKeyRef, const uint8_t* pbData, int32_t cbData, uint8_t* pbCipherOut, size_t *cbCipherLen, int32_t* pOSStatus)
 {
     if (pbData == NULL || cbData < 0 || pbCipherOut == NULL || cbCipherLen == NULL || *cbCipherLen < 0 || pOSStatus == NULL)
     {
@@ -69,7 +69,7 @@ int32_t AppleCryptoNative_RsaEncryptOaep(
 }
 
 int32_t AppleCryptoNative_RsaDecryptPkcs(
-    SecKeyRef secKeyRef, uint8_t* pbData, int32_t cbData, uint8_t* pbPlainOut, size_t *cbPlainLen, int32_t* pOSStatus)
+    SecKeyRef secKeyRef, const uint8_t* pbData, int32_t cbData, uint8_t* pbPlainOut, size_t *cbPlainLen, int32_t* pOSStatus)
 {
     if (pbData == NULL || cbData < 0 || pbPlainOut == NULL || cbPlainLen == NULL || *cbPlainLen < 0 || pOSStatus == NULL)
     {
@@ -81,7 +81,7 @@ int32_t AppleCryptoNative_RsaDecryptPkcs(
 }
 
 int32_t AppleCryptoNative_RsaDecryptOaep(
-    SecKeyRef secKeyRef, uint8_t* pbData, int32_t cbData, uint8_t* pbPlainOut, size_t *cbPlainLen, int32_t* pOSStatus)
+    SecKeyRef secKeyRef, const uint8_t* pbData, int32_t cbData, uint8_t* pbPlainOut, size_t *cbPlainLen, int32_t* pOSStatus)
 {
     if (pbData == NULL || cbData < 0 || pbPlainOut == NULL || cbPlainLen == NULL || *cbPlainLen < 0 || pOSStatus == NULL)
     {
@@ -92,3 +92,26 @@ int32_t AppleCryptoNative_RsaDecryptOaep(
     return *pOSStatus == noErr;
 }
 
+int32_t AppleCryptoNative_RsaRawSignPkcs(
+    SecKeyRef secKeyRef, const uint8_t* pbData, int32_t cbData, uint8_t* pbSigOut, size_t *cbSigLen, int32_t* pOSStatus)
+{
+    if (pbData == NULL || cbData < 0 || pbSigOut == NULL || cbSigLen == NULL || *cbSigLen < 0 || pOSStatus == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    *pOSStatus = SecKeyRawSign(secKeyRef, kSecPaddingPKCS1SHA1, pbData, cbData, pbSigOut, cbSigLen);
+    return *pOSStatus = noErr;
+}
+
+int32_t AppleCryptoNative_RsaRawVerifyPkcs(
+   SecKeyRef secKeyRef, const uint8_t* pbData, int32_t cbData, const uint8_t* pbSig, size_t *cbSigLen, int32_t* pOSStatus)
+{
+    if (pbData == NULL || cbData < 0 || pbSig == NULL || cbSigLen == NULL || *cbSigLen < 0 || pOSStatus == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    *pOSStatus = SecKeyRawVerify(secKeyRef, kSecPaddingPKCS1SHA1, pbData, cbData, pbSig, *cbSigLen);
+    return *pOSStatus = noErr;
+}

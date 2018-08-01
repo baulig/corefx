@@ -17,30 +17,44 @@ DLLEXPORT int32_t AppleCryptoNative_RsaGenerateKey(int32_t keySizeBits,
                                                    int32_t* pOSStatus);
 
 DLLEXPORT int32_t AppleCryptoNative_RsaEncryptPkcs(SecKeyRef SecKeyRef,
-                                                   uint8_t* pbData,
+                                                   const uint8_t* pbData,
                                                    int32_t cbData,
                                                    uint8_t* pbCipherOut,
                                                    size_t *cbCipherLen,
                                                    int32_t* pOSStatus);
 
 DLLEXPORT int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef SecKeyRef,
-                                                   uint8_t* pbData,
+                                                   const uint8_t* pbData,
                                                    int32_t cbData,
                                                    uint8_t* pbCipherOut,
                                                    size_t *cbCipherLen,
                                                    int32_t* pOSStatus);
 
 DLLEXPORT int32_t AppleCryptoNative_RsaDecryptPkcs(SecKeyRef secKeyRef,
-                                                   uint8_t* pbData,
+                                                   const uint8_t* pbData,
                                                    int32_t cbData,
                                                    uint8_t* pbPlainOut,
                                                    size_t *cbPlainLen,
                                                    int32_t* pOSStatus);
 
 DLLEXPORT int32_t AppleCryptoNative_RsaDecryptOaep(SecKeyRef secKeyRef,
-                                                   uint8_t* pbData,
+                                                   const uint8_t* pbData,
                                                    int32_t cbData,
                                                    uint8_t* pbPlainOut,
                                                    size_t *cbPlainLen,
                                                    int32_t* pOSStatus);
+
+DLLEXPORT int32_t AppleCryptoNative_RsaRawSignPkcs(SecKeyRef secKeyRef,
+                                                   const uint8_t* pbData,
+                                                   int32_t cbData,
+                                                   uint8_t* pbSigOut,
+                                                   size_t *cbSigLen,
+                                                   int32_t* pOSStatus);
+
+DLLEXPORT int32_t AppleCryptoNative_RsaRawVerifyPkcs(SecKeyRef secKeyRef,
+                                                     const uint8_t* pbData,
+                                                     int32_t cbData,
+                                                     const uint8_t* pbSig,
+                                                     size_t *cbSigLen,
+                                                     int32_t* pOSStatus);
 
