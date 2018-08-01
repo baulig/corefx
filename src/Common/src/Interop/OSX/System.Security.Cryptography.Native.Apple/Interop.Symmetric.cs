@@ -28,6 +28,8 @@ internal static partial class Interop
         {
             None = 0,
             Pkcs7 = 1,
+            Pkcs1 = 2,
+            Oaep = 3
         }
 
         internal enum PAL_ChainingMode

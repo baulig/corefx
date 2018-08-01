@@ -37,6 +37,8 @@ enum
 {
     PAL_PaddingModeNone = 0,
     PAL_PaddingModePkcs7 = 1,
+    PAL_PaddingModePkcs1 = 2,
+    PAL_PaddingModeOaep = 3,
 };
 typedef uint32_t PAL_PaddingMode;
 

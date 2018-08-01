@@ -21,8 +21,9 @@ internal static partial class Interop
             out int pOSStatus);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaEncryptPkcs(
-            SafeSecKeyRefHandle publicKey,
+        private static extern int AppleCryptoNative_SecKeyEncrypt(
+            SafeSecKeyRefHandle key,
+            PAL_PaddingMode padding,
             ref byte pbData,
             int cbData,
             ref byte pbCipherOut,
@@ -30,17 +31,9 @@ internal static partial class Interop
             out int pOSStatus);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaEncryptOaep(
-            SafeSecKeyRefHandle publicKey,
-            ref byte pbData,
-            int cbData,
-            ref byte pbCipherOut,
-            ref int cbCipherLen,
-            out int pOSStatus);
-
-        [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaDecryptPkcs(
-            SafeSecKeyRefHandle publicKey,
+        private static extern int AppleCryptoNative_SecKeyDecrypt(
+            SafeSecKeyRefHandle key,
+            PAL_PaddingMode padding,
             ref byte pbData,
             int cbData,
             ref byte pbPlainOut,
@@ -48,30 +41,23 @@ internal static partial class Interop
             out int pOSStatus);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaDecryptOaep(
-            SafeSecKeyRefHandle publicKey,
+        private static extern int AppleCryptoNative_SecKeySign(
+            SafeSecKeyRefHandle key,
+            PAL_PaddingMode padding,
             ref byte pbData,
             int cbData,
-            ref byte pbPlainOut,
-            ref int cbPlainLen,
+            ref byte pbSignatureOut,
+            ref int cbSignatureLen,
             out int pOSStatus);
 
-        [DllImport (Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaRawSignPkcs (
-            SafeSecKeyRefHandle publicKey,
+        [DllImport(Libraries.AppleCryptoNative)]
+        private static extern int AppleCryptoNative_SecKeyVerify(
+            SafeSecKeyRefHandle key,
+            PAL_PaddingMode padding,
             ref byte pbData,
             int cbData,
-            ref byte pbSigOut,
-            ref int cbSigLen,
-            out int pOSStatus);
-
-        [DllImport (Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaRawVerifyPkcs (
-            SafeSecKeyRefHandle publicKey,
-            ref byte pbData,
-            int cbData,
-            ref byte pbSig,
-            ref int cbSigLen,
+            ref byte pbSignature,
+            ref int cbSignatureLen,
             out int pOSStatus);
 
         internal static void RsaGenerateKey(
@@ -110,7 +96,8 @@ internal static partial class Interop
         }
 
         private delegate int SecKeyMobileTransform(
-            SafeSecKeyRefHandle publicKey,
+            SafeSecKeyRefHandle key,
+            PAL_PaddingMode padding,
             ref byte pbData,
             int cbData,
             ref byte pbPlainOut,
@@ -118,7 +105,8 @@ internal static partial class Interop
             out int pOSStatus);
 
         private static bool TryExecuteTransform(
-            SafeSecKeyRefHandle publicKey,
+            SafeSecKeyRefHandle key,
+            PAL_PaddingMode padding,
             ReadOnlySpan<byte> source,
             Span<byte> destination,
             out int bytesWritten,
@@ -127,7 +115,8 @@ internal static partial class Interop
             int osStatus;
             bytesWritten = destination.Length;
             int ret = transform (
-                    publicKey,
+                    key,
+                    padding,
                     ref MemoryMarshal.GetReference(source),
                     source.Length,
                     ref MemoryMarshal.GetReference(destination),
@@ -153,12 +142,12 @@ internal static partial class Interop
             if (padding.Mode == RSAEncryptionPaddingMode.Pkcs1)
             {
                 return TryExecuteTransform(
-                        publicKey, source, destination, out bytesWritten, AppleCryptoNative_RsaEncryptPkcs);
+                        publicKey, PAL_PaddingMode.Pkcs1, source, destination, out bytesWritten, AppleCryptoNative_SecKeyEncrypt);
             }
             else if (padding.Mode == RSAEncryptionPaddingMode.Oaep)
             {
                 return TryExecuteTransform(
-                        publicKey, source, destination, out bytesWritten, AppleCryptoNative_RsaEncryptOaep);
+                        publicKey, PAL_PaddingMode.Oaep, source, destination, out bytesWritten, AppleCryptoNative_SecKeyEncrypt);
             }
             else
             {
@@ -177,12 +166,12 @@ internal static partial class Interop
             if (padding.Mode == RSAEncryptionPaddingMode.Pkcs1)
             {
                 return TryExecuteTransform(
-                        privateKey, source, destination, out bytesWritten, AppleCryptoNative_RsaDecryptPkcs);
+                        privateKey, PAL_PaddingMode.Pkcs1, source, destination, out bytesWritten, AppleCryptoNative_SecKeyDecrypt);
             }
             else if (padding.Mode == RSAEncryptionPaddingMode.Oaep)
             {
                 return TryExecuteTransform(
-                        privateKey, source, destination, out bytesWritten, AppleCryptoNative_RsaDecryptOaep);
+                        privateKey, PAL_PaddingMode.Oaep, source, destination, out bytesWritten, AppleCryptoNative_SecKeyDecrypt);
             }
             else
             {
@@ -216,7 +205,7 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
-            return TryRsaDecrypt(privateKey, source, destination, RSAEncryptionPadding.Pkcs1, out bytesWritten);
+            return TryExecuteTransform(privateKey, PAL_PaddingMode.None, source, destination, out bytesWritten, AppleCryptoNative_SecKeyDecrypt);
         }
 
         internal static bool TryRsaEncryptionPrimitive(
@@ -225,7 +214,7 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
-            return TryRsaEncrypt(publicKey, source, destination, RSAEncryptionPadding.Pkcs1, out bytesWritten);
+            return TryExecuteTransform(publicKey, PAL_PaddingMode.None, source, destination, out bytesWritten, AppleCryptoNative_SecKeyEncrypt);
         }
 
         internal static bool TryRsaSignaturePrimitive(
@@ -234,8 +223,7 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
-            return TryExecuteTransform(
-                    privateKey, source, destination, out bytesWritten, AppleCryptoNative_RsaRawSignPkcs);
+            return TryExecuteTransform(privateKey, PAL_PaddingMode.None, source, destination, out bytesWritten, AppleCryptoNative_SecKeySign);
         }
 
         internal static bool TryRsaVerificationPrimitive(
@@ -244,8 +232,7 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
-            return TryExecuteTransform(
-                    publicKey, source, destination, out bytesWritten, AppleCryptoNative_RsaRawVerifyPkcs);
+            return TryExecuteTransform(publicKey, PAL_PaddingMode.None, source, destination, out bytesWritten, AppleCryptoNative_SecKeyVerify);
         }
     }
 }
