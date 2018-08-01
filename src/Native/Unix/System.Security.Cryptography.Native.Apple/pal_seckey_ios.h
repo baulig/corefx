@@ -14,11 +14,11 @@ DLLEXPORT SecKeyRef AppleCryptoNative_SecKeyImportEphemeral(
 
 DLLEXPORT int32_t AppleCryptoNative_SecKeyEncrypt(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
-    uint8_t* pbCipherOut, int32_t *cbCipherLen, int32_t* pOSStatus, CFErrorRef *pErrorOut);
+    uint8_t* pbCipherOut, int32_t *cbCipherLen, int32_t* pOSStatus);
 
 DLLEXPORT int32_t AppleCryptoNative_SecKeyDecrypt(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
-    uint8_t* pbPlainOut, int32_t *cbPlainLen, int32_t* pOSStatus, CFErrorRef *pErrorOut);
+    uint8_t* pbPlainOut, int32_t *cbPlainLen, int32_t* pOSStatus);
 
 DLLEXPORT int32_t AppleCryptoNative_SecKeySign(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,

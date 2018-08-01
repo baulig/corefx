@@ -30,8 +30,7 @@ internal static partial class Interop
             int cbData,
             ref byte pbCipherOut,
             ref int cbCipherLen,
-            out int pOSStatus,
-            out SafeCFErrorHandle pErrorOut);
+            out int pOSStatus);
 
         [DllImport(Libraries.AppleCryptoNative)]
         private static extern int AppleCryptoNative_SecKeyDecrypt(
@@ -41,8 +40,7 @@ internal static partial class Interop
             int cbData,
             ref byte pbPlainOut,
             ref int cbPlainLen,
-            out int pOSStatus,
-            out SafeCFErrorHandle pErrorOut);
+            out int pOSStatus);
 
         [DllImport(Libraries.AppleCryptoNative)]
         private static extern int AppleCryptoNative_SecKeySign(
@@ -52,8 +50,7 @@ internal static partial class Interop
             int cbData,
             ref byte pbSignatureOut,
             ref int cbSignatureLen,
-            out int pOSStatus,
-            out SafeCFErrorHandle pErrorOut);
+            out int pOSStatus);
 
         [DllImport(Libraries.AppleCryptoNative)]
         private static extern int AppleCryptoNative_SecKeyVerify(
@@ -63,8 +60,7 @@ internal static partial class Interop
             int cbData,
             ref byte pbSignature,
             ref int cbSignatureLen,
-            out int pOSStatus,
-            out SafeCFErrorHandle pErrorOut);
+            out int pOSStatus);
 
         internal static void RsaGenerateKey(
             int keySizeInBits,
@@ -108,8 +104,7 @@ internal static partial class Interop
             int cbData,
             ref byte pbPlainOut,
             ref int cbPlainLen,
-            out int pOSStatus,
-            out SafeCFErrorHandle pErrorOut);
+            out int pOSStatus);
 
         private static bool TryExecuteTransform(
             SafeSecKeyRefHandle key,
@@ -119,10 +114,8 @@ internal static partial class Interop
             out int bytesWritten,
             SecKeyMobileTransform transform)
         {
-            Console.Error.WriteLine ($"TRY EXECUTE TRANSFORM: {padding}");
             int osStatus;
             bytesWritten = destination.Length;
-            SafeCFErrorHandle error;
             int ret = transform (
                     key,
                     padding,
@@ -130,8 +123,7 @@ internal static partial class Interop
                     source.Length,
                     ref MemoryMarshal.GetReference(destination),
                     ref bytesWritten,
-                    out osStatus,
-                    out error);
+                    out osStatus);
 
             const int True = 1;
             const int False = 0;
@@ -154,8 +146,7 @@ internal static partial class Interop
                             source.Length,
                             ref MemoryMarshal.GetReference(tmp),
                             ref bytesWritten,
-                            out osStatus,
-                            out error);
+                            out osStatus);
                     if (ret == True)
                     {
                         bytesWritten = 0;

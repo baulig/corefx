@@ -11,15 +11,13 @@
 
 #include <Security/Security.h>
 
-#if REQUIRE_MAC_SDK_VERSION(10_12) || REQUIRE_IOS_SDK_VERSION(10)
-
 /*
 Apply an RSA private key to a signing operation on data which was already padded.
 
 Follows pal_seckey return conventions.
 */
 DLLEXPORT int32_t AppleCryptoNative_RsaSignaturePrimitive(
-    SecKeyRef privateKey, const uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
 
 /*
 Apply an RSA private key to an encryption operation to emit data which is still padded.
@@ -27,7 +25,7 @@ Apply an RSA private key to an encryption operation to emit data which is still 
 Follows pal_seckey return conventions.
 */
 DLLEXPORT int32_t AppleCryptoNative_RsaDecryptionPrimitive(
-    SecKeyRef privateKey, const uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
 
 /*
 Apply an RSA public key to an encryption operation on data which was already padded.
@@ -35,7 +33,7 @@ Apply an RSA public key to an encryption operation on data which was already pad
 Follows pal_seckey return conventions.
 */
 DLLEXPORT int32_t AppleCryptoNative_RsaEncryptionPrimitive(
-    SecKeyRef publicKey, const uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
 
 /*
 Apply an RSA public key to a signing operation to emit data which is still padded.
@@ -43,6 +41,4 @@ Apply an RSA public key to a signing operation to emit data which is still padde
 Follows pal_seckey return conventions.
 */
 DLLEXPORT int32_t AppleCryptoNative_RsaVerificationPrimitive(
-    SecKeyRef publicKey, const uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
-
-#endif /* REQUIRE_MAC_SDK_VERSION(10_12) || REQUIRE_IOS_SDK_VERSION(10) */
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
