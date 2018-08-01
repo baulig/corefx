@@ -477,6 +477,7 @@ namespace System.Text.RegularExpressions
             return match;
         }
 
+#pragma warning disable 162
         protected bool UseOptionC()
         {
 #if MOBILE
@@ -491,6 +492,7 @@ namespace System.Text.RegularExpressions
 
             return (roptions & RegexOptions.Compiled) != 0;
         }
+#pragma warning restore 162
 
         /*
          * True if the L option was set

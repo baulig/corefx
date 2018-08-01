@@ -101,7 +101,7 @@ namespace System.Security.Cryptography
                 throw new CryptographicException(SR.Cryptography_OpenInvalidHandle);
             }
 
-            DerSequenceReader keyReader = Interop.AppleCrypto.SecKeyExport(keyHandle, includePrivateParameters);
+            DerSequenceReader keyReader = Interop.AppleCrypto.SecKeyExport(keyHandle, ref includePrivateParameters);
             ECParameters parameters = new ECParameters();
 
             if (includePrivateParameters)

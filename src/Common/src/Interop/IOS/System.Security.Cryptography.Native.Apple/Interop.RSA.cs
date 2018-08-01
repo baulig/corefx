@@ -126,7 +126,6 @@ internal static partial class Interop
                     out osStatus);
 
             const int True = 1;
-            const int False = 0;
             const int kErrorSeeError = -2;
             const int kErrorMaybeTooSmall = -5;
 

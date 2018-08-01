@@ -1223,6 +1223,7 @@ namespace System.Net
             }
         }
 
+#pragma warning disable 114
         internal void RequestCallback(object obj)
         {
             if (_async)
@@ -1230,6 +1231,7 @@ namespace System.Net
             else
                 SyncRequestCallback(obj);
         }
+#pragma warning restore 144
 
         //
         // Only executed for Sync requests when the pipline is completed
