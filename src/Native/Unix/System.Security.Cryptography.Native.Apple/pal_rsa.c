@@ -4,14 +4,14 @@
 
 #include "pal_rsa.h"
 
-#if REQUIRE_MAC_SDK_VERSION(10_12)
+#if REQUIRE_MAC_SDK_VERSION(10_12) || REQUIRE_IOS_SDK_VERSION(10)
 
 //
 // These APIs are also available on iOS 10
 //
 
 static int32_t RsaPrimitive(SecKeyRef key,
-                            uint8_t* pbData,
+                            const uint8_t* pbData,
                             int32_t cbData,
                             CFDataRef* pDataOut,
                             CFErrorRef* pErrorOut,
@@ -54,28 +54,28 @@ static int32_t RsaPrimitive(SecKeyRef key,
 }
 
 int32_t AppleCryptoNative_RsaSignaturePrimitive(
-    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
+    SecKeyRef privateKey, const uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
 {
     return RsaPrimitive(
         privateKey, pbData, cbData, pDataOut, pErrorOut, kSecKeyAlgorithmRSASignatureRaw, SecKeyCreateSignature);
 }
 
 int32_t AppleCryptoNative_RsaDecryptionPrimitive(
-    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
+    SecKeyRef privateKey, const uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
 {
     return RsaPrimitive(
         privateKey, pbData, cbData, pDataOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionRaw, SecKeyCreateDecryptedData);
 }
 
 int32_t AppleCryptoNative_RsaEncryptionPrimitive(
-    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
+    SecKeyRef publicKey, const uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
 {
     return RsaPrimitive(
         publicKey, pbData, cbData, pDataOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionRaw, SecKeyCreateEncryptedData);
 }
 
 int32_t AppleCryptoNative_RsaVerificationPrimitive(
-    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
+    SecKeyRef publicKey, const uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
 {
     // Since there's not an API which will give back the still-padded signature block with
     // kSecAlgorithmRSASignatureRaw, use the encryption primitive to achieve the same result.

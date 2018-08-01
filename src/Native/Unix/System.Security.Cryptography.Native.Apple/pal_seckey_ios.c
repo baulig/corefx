@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#include "pal_rsa.h"
 #include "pal_seckey_ios.h"
 #include "pal_symmetric.h"
 #include "pal_utilities.h"
@@ -27,13 +28,79 @@ SecKeyRef AppleCryptoNative_SecKeyImportEphemeral(
     return key;
 }
 
-int32_t AppleCryptoNative_SecKeyEncrypt(
-    SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
-    uint8_t* pbCipherOut, int32_t *cbCipherLen, int32_t* pOSStatus)
+enum {
+    TRANSFORM_ENCRYPT = 1,
+    TRANSFORM_DECRYPT = 2
+};
+typedef int32_t NativeTransform;
+
+static int32_t perform_transform(
+    SecKeyRef key, NativeTransform transform, PAL_PaddingMode padding, const uint8_t* input, int32_t inputLen,
+    uint8_t* output, int32_t *outputLen, int32_t* status, CFErrorRef *error)
 {
-    if (pbData == NULL || cbData < 0 || pbCipherOut == NULL || cbCipherLen == NULL || *cbCipherLen < 0 || pOSStatus == NULL)
+    fprintf(
+        stderr, "PERFORM TRANSFORM: %d,%d - %p,%d - %p,%d - %p,%p\n",
+        transform, padding, input, inputLen, output, *outputLen, status, error);
+
+    if (input == NULL || inputLen < 0 || output == NULL || outputLen == NULL || *outputLen < 0 ||
+        status == NULL || error == NULL)
     {
         return kErrorBadInput;
+    }
+
+    *error = NULL;
+    padding = PAL_PaddingModeNone;
+
+    if (padding == PAL_PaddingModeNone)
+    {
+        int32_t retval;
+
+        CFDataRef outputData = NULL; // CFDataCreateWithBytesNoCopy(NULL, output, *outputLen, kCFAllocatorNull);
+
+        fprintf(stderr, "PERFORM TRANSFORM #1: %p\n", outputData);
+
+        switch (transform)
+        {
+            case TRANSFORM_ENCRYPT:
+                retval = AppleCryptoNative_RsaEncryptionPrimitive(key, input, inputLen, &outputData, error);
+                break;
+            case TRANSFORM_DECRYPT:
+                retval = AppleCryptoNative_RsaDecryptionPrimitive(key, input, inputLen, &outputData, error);
+                break;
+            default:
+                return kErrorUnknownState;
+        }
+
+        fprintf(stderr, "PERFORM TRANSFORM #2: %d - %p - %p\n", retval, outputData, *error);
+
+        if (*error != NULL)
+        {
+            if (outputData != NULL)
+            {
+                CFRelease(outputData);
+                outputData = NULL;
+            }
+
+            return kErrorSeeError;
+        }
+
+        if (output == NULL)
+        {
+            return kErrorUnknownState;
+        }
+
+        size_t outputDataLength = CFDataGetLength(outputData);
+        fprintf(stderr, "PERFORM TRANSFORM #3: %ld,%d\n", outputDataLength, *outputLen);
+
+        if (outputDataLength > *outputLen)
+        {
+            return kErrorMaybeTooSmall;            
+        }
+
+        memcpy(output, CFDataGetBytePtr(outputData), outputDataLength);
+        *outputLen = outputDataLength;
+        CFRelease(outputData);
+        return 1;
     }
 
     SecPadding nativePadding;
@@ -52,66 +119,44 @@ int32_t AppleCryptoNative_SecKeyEncrypt(
             return kErrorBadInput;
     }
 
-    size_t cipherLen = *cbCipherLen;
-    *pOSStatus = SecKeyEncrypt(key, nativePadding, pbData, (size_t)cbData, pbCipherOut, &cipherLen);
+    size_t tmpOutputLen = *outputLen;
+    switch (transform)
+    {
+        case TRANSFORM_ENCRYPT:
+            *status = SecKeyEncrypt(key, nativePadding, input, inputLen, output, &tmpOutputLen);
+            break;
+        case TRANSFORM_DECRYPT:
+            *status = SecKeyDecrypt(key, nativePadding, input, inputLen, output, &tmpOutputLen);
+            break;
+        default:
+            return kErrorUnknownState;
+    }
 
-    if (*pOSStatus == errSecParam && *cbCipherLen < SecKeyGetBlockSize(key))
+    fprintf(stderr, "PERFORM TRANSPORT #4: %d - %d - %ld\n", nativePadding, *status, tmpOutputLen);
+
+    if (*status == errSecParam && *outputLen < SecKeyGetBlockSize(key))
     {
         return kErrorMaybeTooSmall;
     }
 
-    *cbCipherLen = cipherLen;
-    return *pOSStatus == noErr;
+    *outputLen = tmpOutputLen;
+    return *status == noErr;
+}
+
+int32_t AppleCryptoNative_SecKeyEncrypt(
+    SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
+    uint8_t* pbCipherOut, int32_t *cbCipherLen, int32_t* pOSStatus, CFErrorRef *pErrorOut)
+{
+    return perform_transform(
+        key, TRANSFORM_ENCRYPT, padding, pbData, cbData, pbCipherOut, cbCipherLen, pOSStatus, pErrorOut);
 }
 
 int32_t AppleCryptoNative_SecKeyDecrypt(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
-    uint8_t* pbPlainOut, int32_t *cbPlainLen, int32_t* pOSStatus)
+    uint8_t* pbPlainOut, int32_t *cbPlainLen, int32_t* pOSStatus, CFErrorRef *pErrorOut)
 {
-    if (pbData == NULL || cbData < 0 || pbPlainOut == NULL || cbPlainLen == NULL || *cbPlainLen < 0 || pOSStatus == NULL)
-    {
-        return kErrorBadInput;
-    }
-
-    SecPadding nativePadding;
-    switch (padding)
-    {
-        case PAL_PaddingModeNone:
-            nativePadding = kSecPaddingNone;
-            break;
-        case PAL_PaddingModePkcs1:
-            nativePadding = kSecPaddingPKCS1;
-            break;
-        case PAL_PaddingModeOaep:
-            nativePadding = kSecPaddingOAEP;
-            break;
-        default:
-            return kErrorBadInput;
-    }
-
-    size_t plainLen = *cbPlainLen;
-    *pOSStatus = SecKeyDecrypt(key, nativePadding, pbData, (size_t)cbData, pbPlainOut, &plainLen);
-
-    if (*pOSStatus == errSecParam && *cbPlainLen < SecKeyGetBlockSize(key))
-    {
-        return kErrorMaybeTooSmall;
-    }
-
-    if (*pOSStatus != noErr)
-    {
-        return kErrorSeeError;
-    }
-
-    if (padding == PAL_PaddingModeNone && plainLen < *cbPlainLen)
-    {
-        int padLen = *cbPlainLen - plainLen;
-        memmove(pbPlainOut+padLen, pbPlainOut, plainLen);
-        memset(pbPlainOut, 0, padLen);
-        return 1;
-    }
-
-    *cbPlainLen = plainLen;
-    return 1;
+    return perform_transform(
+        key, TRANSFORM_DECRYPT, padding, pbData, cbData, pbPlainOut, cbPlainLen, pOSStatus, pErrorOut);
 }
 
 int32_t AppleCryptoNative_SecKeySign(
@@ -152,5 +197,5 @@ int32_t AppleCryptoNative_SecKeyVerify(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
     uint8_t* pbSig, int32_t *cbSigLen, int32_t* pOSStatus)
 {
-    return AppleCryptoNative_SecKeyEncrypt(key, padding, pbData, cbData, pbSig, cbSigLen, pOSStatus);
+    return AppleCryptoNative_SecKeyEncrypt(key, padding, pbData, cbData, pbSig, cbSigLen, pOSStatus, NULL);
 }
