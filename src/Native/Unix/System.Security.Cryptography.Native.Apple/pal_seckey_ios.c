@@ -31,6 +31,7 @@ int32_t AppleCryptoNative_SecKeyEncrypt(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
     uint8_t* pbCipherOut, int32_t *cbCipherLen, int32_t* pOSStatus)
 {
+    fprintf(stderr, "SEC KEY ENCRYPT: %d - %d - %d\n", padding, cbData, *cbCipherLen);
     if (pbData == NULL || cbData < 0 || pbCipherOut == NULL || cbCipherLen == NULL || *cbCipherLen < 0 || pOSStatus == NULL)
     {
         return kErrorBadInput;
@@ -52,8 +53,11 @@ int32_t AppleCryptoNative_SecKeyEncrypt(
             return kErrorBadInput;
     }
 
+    fprintf(stderr, "SEC KEY ENCRYPT #1: %d\n", nativePadding);
+
     size_t cipherLen = *cbCipherLen;
     *pOSStatus = SecKeyEncrypt(key, nativePadding, pbData, (size_t)cbData, pbCipherOut, &cipherLen);
+    fprintf(stderr, "SEC KEY ENCRYPT #2: %d - %ld\n", *pOSStatus, cipherLen);
     *cbCipherLen = cipherLen;
     return *pOSStatus == noErr;
 }
@@ -62,6 +66,7 @@ int32_t AppleCryptoNative_SecKeyDecrypt(
     SecKeyRef key, PAL_PaddingMode padding, const uint8_t* pbData, int32_t cbData,
     uint8_t* pbPlainOut, int32_t *cbPlainLen, int32_t* pOSStatus)
 {
+    fprintf(stderr, "SEC KEY DECRYPT: %d - %d - %d\n", padding, cbData, *cbPlainLen);
     if (pbData == NULL || cbData < 0 || pbPlainOut == NULL || cbPlainLen == NULL || *cbPlainLen < 0 || pOSStatus == NULL)
     {
         return kErrorBadInput;
@@ -83,8 +88,27 @@ int32_t AppleCryptoNative_SecKeyDecrypt(
             return kErrorBadInput;
     }
 
+    fprintf(stderr, "SEC KEY DECRYPT #1: %d\n", nativePadding);
+
     size_t plainLen = *cbPlainLen;
     *pOSStatus = SecKeyDecrypt(key, nativePadding, pbData, (size_t)cbData, pbPlainOut, &plainLen);
+    fprintf(stderr, "SEC KEY DECRYPT #2: %d - %ld\n", *pOSStatus, plainLen);
+
+    if (*pOSStatus != noErr)
+    {
+        return 0;
+    }
+
+    if (padding == PAL_PaddingModeNone && plainLen < *cbPlainLen)
+    {
+        int padLen = *cbPlainLen - plainLen;
+        fprintf(stderr, "SEC KEY DECYPT #3: %d\n", padLen);
+
+        memmove(pbPlainOut+padLen, pbPlainOut, plainLen);
+        memset(pbPlainOut, 0, padLen);
+        return 1;
+    }
+
     *cbPlainLen = plainLen;
     return *pOSStatus == noErr;
 }
