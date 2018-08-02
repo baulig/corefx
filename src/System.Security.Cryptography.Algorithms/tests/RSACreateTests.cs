@@ -19,7 +19,7 @@ namespace System.Security.Cryptography.Algorithms.Tests
         [InlineData(2048)]
         public static void CreateWithKeysize(int keySizeInBits)
         {
-            using (RSA rsa = RSA.Create(keySizeInBits))
+            using (RSA rsa = RSAFactory.Create(keySizeInBits))
             {
                 Assert.Equal(keySizeInBits, rsa.KeySize);
 
@@ -61,7 +61,7 @@ namespace System.Security.Cryptography.Algorithms.Tests
         {
             RSAParameters exportedPrivate;
 
-            using (RSA rsa = RSA.Create(parameters))
+            using (RSA rsa = RSAFactory.Create(parameters))
             {
                 exportedPrivate = rsa.ExportParameters(true);
             }
@@ -75,10 +75,10 @@ namespace System.Security.Cryptography.Algorithms.Tests
             RSAParameters parameters = TestData.RSA1032Parameters;
             parameters.Exponent = null;
 
-            if (RSA.Create() is RSACng && PlatformDetection.IsFullFramework)
-                AssertExtensions.Throws<ArgumentException>(null, () => RSA.Create(parameters));
+            if (RSAFactory.Create() is RSACng && PlatformDetection.IsFullFramework)
+                AssertExtensions.Throws<ArgumentException>(null, () => RSAFactory.Create(parameters));
             else
-                Assert.Throws<CryptographicException>(() => RSA.Create(parameters));
+                Assert.Throws<CryptographicException>(() => RSAFactory.Create(parameters));
         }
     }
 }
