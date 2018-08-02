@@ -56,8 +56,12 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
     return ret;
 }
 
-int32_t AppleCryptoNative_GenerateSignature(
-    SecKeyRef privateKey, uint8_t* pbDataHash, int32_t cbDataHash, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut)
+int32_t AppleCryptoNative_GenerateSignature(SecKeyRef privateKey,
+                                            uint8_t* pbDataHash,
+                                            int32_t cbDataHash,
+                                            CFDataRef* pSignatureOut,
+                                            int32_t *pOSStatus,
+                                            CFErrorRef* pErrorOut)
 {
     return GenerateSignature(privateKey, pbDataHash, cbDataHash, PAL_Unknown, false, pSignatureOut, pErrorOut);
 }
@@ -67,6 +71,7 @@ int32_t AppleCryptoNative_GenerateSignatureWithHashAlgorithm(SecKeyRef privateKe
                                                              int32_t cbDataHash,
                                                              PAL_HashAlgorithm hashAlgorithm,
                                                              CFDataRef* pSignatureOut,
+                                                             int32_t *pOSStatus,
                                                              CFErrorRef* pErrorOut)
 {
     return GenerateSignature(privateKey, pbDataHash, cbDataHash, hashAlgorithm, true, pSignatureOut, pErrorOut);
@@ -131,6 +136,7 @@ int32_t AppleCryptoNative_VerifySignatureWithHashAlgorithm(SecKeyRef publicKey,
                                                            uint8_t* pbSignature,
                                                            int32_t cbSignature,
                                                            PAL_HashAlgorithm hashAlgorithm,
+                                                           int32_t *pOSStatus,
                                                            CFErrorRef* pErrorOut)
 {
     return VerifySignature(publicKey, pbDataHash, cbDataHash, pbSignature, cbSignature, hashAlgorithm, true, pErrorOut);
@@ -141,6 +147,7 @@ int32_t AppleCryptoNative_VerifySignature(SecKeyRef publicKey,
                                           int32_t cbDataHash,
                                           uint8_t* pbSignature,
                                           int32_t cbSignature,
+                                          int32_t *pOSStatus,
                                           CFErrorRef* pErrorOut)
 {
     return VerifySignature(publicKey, pbDataHash, cbDataHash, pbSignature, cbSignature, PAL_Unknown, false, pErrorOut);
