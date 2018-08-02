@@ -4,15 +4,9 @@
 
 #include "pal_signverify.h"
 
-int32_t AppleCryptoNative_GenerateSignature(
-    SecKeyRef privateKey, uint8_t* pbDataHash, int32_t cbDataHash, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut)
-{
-    return AppleCryptoNative_GenerateSignatureWithHashAlgorithm(
-        privateKey, pbDataHash, cbDataHash, PAL_SHA1, pSignatureOut, pErrorOut);
-}
-
-int32_t AppleCryptoNative_GenerateSignatureWithHashAlgorithm(
-    SecKeyRef privateKey, uint8_t* pbDataHash, int32_t cbDataHash, PAL_HashAlgorithm hashAlgorithm,
+static int32_t GenerateSignature(
+    SecKeyRef privateKey, uint8_t* pbDataHash, int32_t cbDataHash,
+    PAL_HashAlgorithm hashAlgorithm, bool useHashAlgorithm,
     CFDataRef *pSignatureOut, CFErrorRef *pErrorOut)
 {
     if (pSignatureOut != NULL)
@@ -31,6 +25,34 @@ int32_t AppleCryptoNative_GenerateSignatureWithHashAlgorithm(
     if (dataHash == NULL)
     {
         return kErrorUnknownState;
+    }
+
+    if (!useHashAlgorithm)
+    {
+        size_t outputLen = SecKeyGetBlockSize(privateKey) * 4;
+        uint8_t *output = malloc(outputLen);
+        if (output == NULL)
+        {
+            return kErrorUnknownState;
+        }
+
+        OSStatus status = SecKeyRawSign(privateKey, kSecPaddingNone, pbDataHash, cbDataHash, output, &outputLen);
+
+        if (status != noErr)
+        {
+            free(output);
+            return kErrorUnknownState;
+        }
+
+        *pSignatureOut = CFDataCreate(NULL, output, outputLen);
+        free(output);
+
+        if (*pSignatureOut == NULL)
+        {
+            return kErrorUnknownState;
+        }
+
+       return 1;
     }
 
     SecKeyAlgorithm algorithm;
@@ -54,19 +76,44 @@ int32_t AppleCryptoNative_GenerateSignatureWithHashAlgorithm(
     }
 
     *pSignatureOut = SecKeyCreateSignature(privateKey, algorithm, dataHash, pErrorOut);
-    return *pSignatureOut != NULL;
+
+    if (*pErrorOut != NULL)
+    {
+        if (*pSignatureOut != NULL)
+        {
+            CFRelease(*pSignatureOut);
+            *pSignatureOut = NULL;
+        }
+
+        return kErrorSeeError;
+    }
+
+    if (*pSignatureOut == NULL)
+    {
+        return kErrorUnknownState;
+    }
+
+    return 1;
 }
 
-int32_t AppleCryptoNative_VerifySignature(
-    SecKeyRef publicKey, uint8_t* pbDataHash, int32_t cbDataHash, uint8_t* pbSignature, int32_t cbSignature, CFErrorRef* pErrorOut)
+int32_t AppleCryptoNative_GenerateSignature(
+    SecKeyRef privateKey, uint8_t* pbDataHash, int32_t cbDataHash, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut)
 {
-    return AppleCryptoNative_VerifySignatureWithHashAlgorithm(
-        publicKey, pbDataHash, cbDataHash, pbSignature, cbSignature, PAL_SHA1, pErrorOut);
+    return GenerateSignature(
+        privateKey, pbDataHash, cbDataHash, PAL_Unknown, false, pSignatureOut, pErrorOut);
 }
 
-int32_t AppleCryptoNative_VerifySignatureWithHashAlgorithm(
+int32_t AppleCryptoNative_GenerateSignatureWithHashAlgorithm(
+    SecKeyRef privateKey, uint8_t* pbDataHash, int32_t cbDataHash, PAL_HashAlgorithm hashAlgorithm,
+    CFDataRef *pSignatureOut, CFErrorRef *pErrorOut)
+{
+    return GenerateSignature(
+        privateKey, pbDataHash, cbDataHash, hashAlgorithm, true, pSignatureOut, pErrorOut);
+}
+
+static int32_t VerifySignature(
     SecKeyRef publicKey, uint8_t* pbDataHash, int32_t cbDataHash, uint8_t* pbSignature, int32_t cbSignature,
-    PAL_HashAlgorithm hashAlgorithm, CFErrorRef* pErrorOut)
+    PAL_HashAlgorithm hashAlgorithm, bool useHashAlgorithm, CFErrorRef* pErrorOut)
 {
     if (pErrorOut != NULL)
         *pErrorOut = NULL;
@@ -75,6 +122,18 @@ int32_t AppleCryptoNative_VerifySignatureWithHashAlgorithm(
         cbSignature < 0 || pErrorOut == NULL)
     {
         return kErrorBadInput;
+    }
+
+    if (!useHashAlgorithm)
+    {
+        OSStatus status = SecKeyRawVerify(publicKey, kSecPaddingNone, pbDataHash, cbDataHash, pbSignature, cbSignature);
+
+        if (status != noErr)
+        {
+            return kErrorUnknownState;
+        }
+
+       return 1;
     }
 
     CFDataRef dataHash = CFDataCreateWithBytesNoCopy(NULL, pbDataHash, cbDataHash, kCFAllocatorNull);
@@ -109,3 +168,17 @@ int32_t AppleCryptoNative_VerifySignatureWithHashAlgorithm(
 }
 
 
+int32_t AppleCryptoNative_VerifySignature(
+    SecKeyRef publicKey, uint8_t* pbDataHash, int32_t cbDataHash, uint8_t* pbSignature, int32_t cbSignature, CFErrorRef* pErrorOut)
+{
+    return VerifySignature(
+        publicKey, pbDataHash, cbDataHash, pbSignature, cbSignature, PAL_Unknown, false, pErrorOut);
+}
+
+int32_t AppleCryptoNative_VerifySignatureWithHashAlgorithm(
+    SecKeyRef publicKey, uint8_t* pbDataHash, int32_t cbDataHash, uint8_t* pbSignature, int32_t cbSignature,
+    PAL_HashAlgorithm hashAlgorithm, CFErrorRef* pErrorOut)
+{
+    return VerifySignature(
+        publicKey, pbDataHash, cbDataHash, pbSignature, cbSignature, hashAlgorithm, true, pErrorOut);
+}
