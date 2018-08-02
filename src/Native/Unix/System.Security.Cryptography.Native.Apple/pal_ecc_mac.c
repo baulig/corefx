@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 #include "pal_ecc_mac.h"
+#include "pal_seckey_mac.h"
 
 int32_t AppleCryptoNative_EccGenerateKey(
     int32_t keySizeBits, SecKeychainRef tempKeychain, SecKeyRef* pPublicKey, SecKeyRef* pPrivateKey, int32_t* pOSStatus)
