@@ -4,7 +4,6 @@
 
 #include "pal_signverify.h"
 #include "pal_error.h"
-#include "pal_version.h"
 
 #if REQUIRE_MAC_SDK_VERSION(10,7)
 
@@ -36,17 +35,18 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
         return PAL_Error_BadInput;
     }
 
+    int32_t ret = PAL_Error_Platform;
+
 #if REQUIRE_MAC_SDK_VERSION(10,7)
 
     CFDataRef dataHash = CFDataCreateWithBytesNoCopy(NULL, pbDataHash, cbDataHash, kCFAllocatorNull);
-
     if (dataHash == NULL)
     {
         return PAL_Error_UnknownState;
     }
 
     SecTransformRef signer = SecSignTransformCreate(privateKey, pErrorOut);
-    int32_t ret = PAL_Error_SeeError;
+    ret = PAL_Error_SeeError;
 
     if (signer != NULL)
     {
@@ -62,7 +62,6 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
     }
 
     CFRelease(dataHash);
-    return ret;
 
 #elif REQUIRE_IOS
 
@@ -96,9 +95,8 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
        return 1;
     }
 
-#if REQUIRE_IOS_SDK_VERSION(10,0)
-
     // These APIs require iOS 10.0+, macOS 10.12+, tvOS 10.0+, watchOS 3.0+
+    // FIXME: should add REQUIRE_IOS_SDK_VERSION(10,0) once we figured out the per-version compilation issue.
 
     SecKeyAlgorithm algorithm;
 
@@ -120,9 +118,15 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
             return kErrorUnknownAlgorithm;
     }
 
+    CFDataRef dataHash = CFDataCreateWithBytesNoCopy(NULL, pbDataHash, cbDataHash, kCFAllocatorNull);
+    if (dataHash == NULL)
+    {
+        return PAL_Error_UnknownState;
+    }
+
     *pSignatureOut = SecKeyCreateSignature(privateKey, algorithm, dataHash, pErrorOut);
 
-    if (*pErrorOut != NULL)
+    if (*pErrorOut != NULL || *pSignatureOut == NULL)
     {
         if (*pSignatureOut != NULL)
         {
@@ -130,20 +134,18 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
             *pSignatureOut = NULL;
         }
 
-        return kErrorSeeError;
+        ret = kErrorSeeError;
     }
-
-    if (*pSignatureOut == NULL)
+    else
     {
-        return kErrorUnknownState;
+        ret = 1;
     }
 
-    return 1;
+    CFRelease(dataHash);
 
 #endif
-#endif
 
-    return PAL_Error_Platform;
+    return ret;
 }
 
 int32_t AppleCryptoNative_GenerateSignature(SecKeyRef privateKey,
@@ -221,9 +223,10 @@ static int32_t VerifySignature(SecKeyRef publicKey,
         CFRelease(verifier);
     }
 
-#elif REQUIRE_IOS_SDK_VERSION(10,0)
+#elif REQUIRE_IOS
 
     // These APIs require iOS 10.0+, macOS 10.12+, tvOS 10.0+, watchOS 3.0+
+    // FIXME: should add REQUIRE_IOS_SDK_VERSION(10,0) once we figured out the per-version compilation issue.
 
     SecKeyAlgorithm algorithm;
 
