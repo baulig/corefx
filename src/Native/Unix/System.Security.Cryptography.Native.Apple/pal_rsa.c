@@ -4,7 +4,7 @@
 
 #include "pal_rsa.h"
 
-#if REQUIRE_MAC_SDK_VERSION(10_12)
+#if REQUIRE_MAC_SDK_VERSION(10,12)
 
 //
 // These APIs are also available on iOS 10

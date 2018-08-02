@@ -19,7 +19,7 @@ DLLEXPORT int32_t AppleCryptoNative_GenerateSignature(SecKeyRef privateKey,
                                                       uint8_t* pbDataHash,
                                                       int32_t cbDataHash,
                                                       CFDataRef* pSignatureOut,
-                                                      int32_t *pOSStatus,
+                                                      int32_t *pOSStatusOut,
                                                       CFErrorRef* pErrorOut);
 
 /*
@@ -32,7 +32,7 @@ DLLEXPORT int32_t AppleCryptoNative_GenerateSignatureWithHashAlgorithm(SecKeyRef
                                                                        int32_t cbDataHash,
                                                                        PAL_HashAlgorithm hashAlgorithm,
                                                                        CFDataRef* pSignatureOut,
-                                                                       int32_t *pOSStatus,
+                                                                       int32_t *pOSStatusOut,
                                                                        CFErrorRef* pErrorOut);
 
 /*
@@ -47,7 +47,7 @@ DLLEXPORT int32_t AppleCryptoNative_VerifySignatureWithHashAlgorithm(SecKeyRef p
                                                                      uint8_t* pbSignature,
                                                                      int32_t cbSignature,
                                                                      PAL_HashAlgorithm hashAlgorithm,
-                                                                     int32_t *pOSStatus,
+                                                                     int32_t *pOSStatusOut,
                                                                      CFErrorRef* pErrorOut);
 
 /*
@@ -61,5 +61,5 @@ DLLEXPORT int32_t AppleCryptoNative_VerifySignature(SecKeyRef publicKey,
                                                     int32_t cbDataHash,
                                                     uint8_t* pbSignature,
                                                     int32_t cbSignature,
-                                                    int32_t *pOSStatus,
+                                                    int32_t *pOSStatusOut,
                                                     CFErrorRef* pErrorOut);
