@@ -93,12 +93,17 @@ namespace System.Security.Cryptography
                     throw new CryptographicException(SR.Cryptography_OpenInvalidHandle);
                 }
 
+                var origExportPrivate = includePrivateParameters;
                 DerSequenceReader keyReader = Interop.AppleCrypto.SecKeyExport(keyHandle, ref includePrivateParameters);
                 RSAParameters parameters = new RSAParameters();
 
                 if (includePrivateParameters)
                 {
                     keyReader.ReadPkcs8Blob(ref parameters);
+                }
+                else if (origExportPrivate)
+                {
+                    keyReader.ReadPkcs1PrivateBlob(ref parameters);
                 }
                 else
                 {
@@ -848,6 +853,12 @@ namespace System.Security.Cryptography
 
         private static void ReadPkcs1PrivateBlob(byte[] privateKeyBytes, ref RSAParameters parameters)
         {
+            DerSequenceReader privateKey = new DerSequenceReader(privateKeyBytes);
+            privateKey.ReadPkcs1PrivateBlob(ref parameters);
+        }
+
+        internal static void ReadPkcs1PrivateBlob(this DerSequenceReader privateKey, ref RSAParameters parameters)
+        {
             // RSAPrivateKey::= SEQUENCE {
             //    version Version,
             //    modulus           INTEGER,  --n
@@ -860,7 +871,6 @@ namespace System.Security.Cryptography
             //    coefficient INTEGER,  --(inverse of q) mod p
             //    otherPrimeInfos OtherPrimeInfos OPTIONAL
             // }
-            DerSequenceReader privateKey = new DerSequenceReader(privateKeyBytes);
             int version = privateKey.ReadInteger();
 
             if (version != 0)
