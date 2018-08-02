@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 #include "pal_signverify.h"
+#include <Security/SecureTransport.h> // for errSSLCrypto
 
 static int32_t GenerateSignature(
     SecKeyRef privateKey, uint8_t* pbDataHash, int32_t cbDataHash,
@@ -128,7 +129,10 @@ static int32_t VerifySignature(
     if (!useHashAlgorithm)
     {
         *pOSStatus = SecKeyRawVerify(publicKey, kSecPaddingNone, pbDataHash, cbDataHash, pbSignature, cbSignature);
-
+        if (*pOSStatus == errSSLCrypto) // -9809
+        {
+            return 0;
+        }
         if (*pOSStatus != noErr)
         {
             return kErrorSeeStatus;
