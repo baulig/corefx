@@ -46,6 +46,7 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
     int32_t ret = PAL_Error_SeeError;
 
 #if REQUIRE_MAC_SDK_VERSION(10,7)
+
     SecTransformRef signer = SecSignTransformCreate(privateKey, pErrorOut);
 
     if (signer != NULL)
@@ -60,6 +61,77 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
 
         CFRelease(signer);
     }
+
+#elif REQUIRE_IOS
+
+    if (!useHashAlgorithm)
+    {
+        size_t outputLen = SecKeyGetBlockSize(privateKey) * 4;
+        uint8_t *output = malloc(outputLen);
+        if (output == NULL)
+        {
+            return kErrorUnknownState;
+        }
+
+        *pOSStatus = SecKeyRawSign(privateKey, kSecPaddingNone, pbDataHash, cbDataHash, output, &outputLen);
+
+        if (*pOSStatus != noErr)
+        {
+            free(output);
+            return kErrorSeeStatus;
+        }
+
+        *pSignatureOut = CFDataCreate(NULL, output, outputLen);
+        free(output);
+
+        if (*pSignatureOut == NULL)
+        {
+            return kErrorUnknownState;
+        }
+
+       return 1;
+    }
+
+    SecKeyAlgorithm algorithm;
+
+    switch (hashAlgorithm)
+    {
+        case PAL_SHA1:
+            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1;
+            break;
+        case PAL_SHA256:
+            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256;
+            break;
+        case PAL_SHA384:
+            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384;
+            break;
+        case PAL_SHA512:
+            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512;
+            break;
+        default:
+            return kErrorUnknownAlgorithm;
+    }
+
+    *pSignatureOut = SecKeyCreateSignature(privateKey, algorithm, dataHash, pErrorOut);
+
+    if (*pErrorOut != NULL)
+    {
+        if (*pSignatureOut != NULL)
+        {
+            CFRelease(*pSignatureOut);
+            *pSignatureOut = NULL;
+        }
+
+        return kErrorSeeError;
+    }
+
+    if (*pSignatureOut == NULL)
+    {
+        return kErrorUnknownState;
+    }
+
+    ret = 1;
+
 #else
     ret = PAL_Error_Platform;
 #endif
@@ -126,6 +198,7 @@ static int32_t VerifySignature(SecKeyRef publicKey,
     int32_t ret = PAL_Error_SeeError;
 
 #if REQUIRE_MAC_SDK_VERSION(10,7)
+
     SecTransformRef verifier = SecVerifyTransformCreate(publicKey, signature, pErrorOut);
 
     if (verifier != NULL)
@@ -140,7 +213,32 @@ static int32_t VerifySignature(SecKeyRef publicKey,
 
         CFRelease(verifier);
     }
-#else
+
+#elif REQUIRE_IOS
+
+    SecKeyAlgorithm algorithm;
+
+    switch (hashAlgorithm)
+    {
+        case PAL_SHA1:
+            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1;
+            break;
+        case PAL_SHA256:
+            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256;
+            break;
+        case PAL_SHA384:
+            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384;
+            break;
+        case PAL_SHA512:
+            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512;
+            break;
+        default:
+            return kErrorUnknownAlgorithm;
+    }
+
+    return SecKeyVerifySignature(publicKey, algorithm, dataHash, signature, pErrorOut);
+
+e
     ret = PAL_Error_Platform;
 #endif
 

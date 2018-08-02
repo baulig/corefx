@@ -13,3 +13,4 @@
  *`TARGET_OS_MAC` is defined on all Apple platforms, so we can't use it to distinguish between Mac and iOS.
  */
 #define REQUIRE_MAC (REQUIRE_MAC_SDK_VERSION(10,7))
+#define REQUIRE_IOS (REQUIRE_IOS_SDK_VERSION(6,0))
