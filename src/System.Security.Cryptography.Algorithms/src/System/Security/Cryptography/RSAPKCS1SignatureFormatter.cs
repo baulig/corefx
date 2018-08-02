@@ -34,7 +34,7 @@ namespace System.Security.Cryptography
             try
             {
                 // Verify the name
-                if (OidLookup.ToOid(strName, OidGroup.HashAlgorithm, fallBackToAllGroups: false) == null)
+                if (!OidLookupHelper.IsValidHashAlgorithm(strName))
                     throw new CryptographicException(SR.Cryptography_Oid_InvalidName);
 
                 // Uppercase known names as required for BCrypt
