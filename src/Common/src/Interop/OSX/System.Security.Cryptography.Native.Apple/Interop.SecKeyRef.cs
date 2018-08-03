@@ -21,19 +21,6 @@ internal static partial class Interop
             out SafeSecKeyRefHandle ppKeyOut,
             out int pOSStatus);
 
-        [DllImport(Libraries.AppleCryptoNative)]
-        private static extern ulong AppleCryptoNative_SecKeyGetSimpleKeySizeInBytes(SafeSecKeyRefHandle publicKey);
-
-        internal static int GetSimpleKeySizeInBits(SafeSecKeyRefHandle publicKey)
-        {
-            ulong keySizeInBytes = AppleCryptoNative_SecKeyGetSimpleKeySizeInBytes(publicKey);
-
-            checked
-            {
-                return (int)(keySizeInBytes * 8);
-            }
-        }
-
         internal static SafeSecKeyRefHandle ImportEphemeralKey(byte[] keyBlob, bool hasPrivateKey)
         {
             Debug.Assert(keyBlob != null);

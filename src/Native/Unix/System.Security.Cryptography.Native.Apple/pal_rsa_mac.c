@@ -116,7 +116,7 @@ int32_t AppleCryptoNative_RsaEncryptPkcs(
     return ret;
 }
 
-#if REQUIRE_MAC_SDK_VERSION(10_8)
+#if REQUIRE_MAC_SDK_VERSION(10,8)
 
 static int32_t ExecuteOaepTransform(SecTransformRef xform,
                                     uint8_t* pbData,
@@ -207,7 +207,7 @@ int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
     return ret;
 }
 
-#endif /* REQUIRE_MAC_SDK_VERSION(10_8) */
+#endif /* REQUIRE_MAC_SDK_VERSION(10,8) */
 
 static int32_t ExecuteCFDataTransform(
     SecTransformRef xform, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
