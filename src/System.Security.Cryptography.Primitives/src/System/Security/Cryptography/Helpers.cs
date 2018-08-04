@@ -10,16 +10,6 @@ namespace System.Security.Cryptography
 {
     internal static class Helpers
     {
-        public static byte[] CloneByteArray(this byte[] src)
-        {
-            if (src == null)
-            {
-                return null;
-            }
-
-            return (byte[])(src.Clone());
-        }
-
         public static bool IsLegalSize(this int size, KeySizes[] legalSizes)
         {
             bool dontCare;
