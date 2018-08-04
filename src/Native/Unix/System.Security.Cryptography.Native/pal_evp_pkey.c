@@ -24,5 +24,10 @@ int32_t CryptoNative_UpRefEvpPkey(EVP_PKEY* pkey)
         return 0;
     }
 
+#ifdef OPENSSL_IS_BORINGSSL
+    EVP_PKEY_up_ref(pkey);
+    return 1;
+#else
     return CRYPTO_add(&pkey->references, 1, CRYPTO_LOCK_EVP_PKEY);
+#endif
 }

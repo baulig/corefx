@@ -568,7 +568,11 @@ BIO* CryptoNative_GetX509NameInfo(X509* x509, int32_t nameType, int32_t forIssue
 
         if (altNames)
         {
+#ifdef OPENSSL_IS_BORINGSSL
+            size_t i;
+#else
             int i;
+#endif
 
             for (i = 0; i < sk_GENERAL_NAME_num(altNames); ++i)
             {
@@ -1094,7 +1098,11 @@ int32_t CryptoNative_BioTell(BIO* bio)
         return -1;
     }
 
+#ifdef OPENSSL_IS_BORINGSSL
+    return -1;
+#else
     return BIO_tell(bio);
+#endif
 }
 
 /*
@@ -1121,7 +1129,11 @@ int32_t CryptoNative_BioSeek(BIO* bio, int32_t ofs)
         return -1;
     }
 
+#ifdef OPENSSL_IS_BORINGSSL
+    return -1;
+#else
     return BIO_seek(bio, ofs);
+#endif
 }
 
 /*
@@ -1210,12 +1222,19 @@ int32_t CryptoNative_LookupFriendlyNameByOid(const char* oidValue, const char** 
     {
         unsigned long err = ERR_peek_last_error();
 
+#ifdef OPENSSL_IS_BORINGSSL
+        if (err != 0)
+        {
+            return -1;
+        }
+#else
         // If the most recent error pushed onto the error queue is NOT from OID parsing
         // then signal for an exception to be thrown.
         if (err != 0 && ERR_GET_FUNC(err) != ASN1_F_A2D_ASN1_OBJECT)
         {
             return -1;
         }
+#endif
 
         return 0;
     }
