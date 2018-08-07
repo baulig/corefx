@@ -4,6 +4,8 @@
 
 #include "pal_ecc_mac.h"
 #include "pal_seckey_mac.h"
+#include "pal_error.h"
+#include "pal_version.h"
 
 int32_t AppleCryptoNative_EccGenerateKey(
     int32_t keySizeBits, SecKeychainRef tempKeychain, SecKeyRef* pPublicKey, SecKeyRef* pPrivateKey, int32_t* pOSStatus)
@@ -16,6 +18,7 @@ int32_t AppleCryptoNative_EccGenerateKey(
     if (pPublicKey == NULL || pPrivateKey == NULL || pOSStatus == NULL)
         return kErrorBadInput;
 
+#if REQUIRE_MAC_SDK_VERSION(10,9)
     CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(NULL, 2, &kCFTypeDictionaryKeyCallBacks, NULL);
 
     CFNumberRef cfKeySizeValue = CFNumberCreate(NULL, kCFNumberIntType, &keySizeBits);
@@ -51,5 +54,8 @@ int32_t AppleCryptoNative_EccGenerateKey(
 
     *pOSStatus = status;
     return status == noErr;
+#else
+    return PAL_Error_Platform;
+#endif
 }
 
