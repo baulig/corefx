@@ -151,6 +151,8 @@ const EVP_CIPHER* CryptoNative_EvpAes256Cbc()
     return EVP_aes_256_cbc();
 }
 
+#ifndef OPENSSL_IS_BORINGSSL
+
 const EVP_CIPHER* CryptoNative_EvpDesEcb()
 {
     return EVP_des_ecb();
@@ -180,3 +182,6 @@ const EVP_CIPHER* CryptoNative_EvpRC2Cbc()
 {
     return EVP_rc2_cbc();
 }
+
+#endif
+

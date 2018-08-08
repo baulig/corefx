@@ -115,6 +115,8 @@ Direct shim to EVP_aes_256_cbc.
 */
 DLLEXPORT const EVP_CIPHER* CryptoNative_EvpAes256Cbc(void);
 
+#ifndef OPENSSL_IS_BORINGSSL
+
 /*
 Function:
 EvpDes3Ecb
@@ -162,3 +164,6 @@ EvpRC2Cbc
 Direct shim to EVP_des_rc2_cbc.
 */
 DLLEXPORT const EVP_CIPHER* CryptoNative_EvpRC2Cbc(void);
+
+#endif
+
