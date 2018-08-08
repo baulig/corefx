@@ -11,8 +11,6 @@
 
 #include <Security/Security.h>
 
-DLLEXPORT int32_t AppleCryptoNative_SupportsRsaPrimitives(void);
-
 /*
 Apply an RSA private key to a signing operation on data which was already padded.
 

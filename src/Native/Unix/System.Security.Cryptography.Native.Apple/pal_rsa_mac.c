@@ -4,6 +4,7 @@
 
 #include "pal_rsa_mac.h"
 #include "pal_seckey_mac.h"
+#include "pal_version.h"
 
 static int32_t ExecuteCFDataTransform(
     SecTransformRef xform, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
@@ -119,6 +120,9 @@ int32_t AppleCryptoNative_RsaEncryptPkcs(
 int32_t AppleCryptoNative_RsaEncryptRaw(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut)
 {
+#if REQUIRE_MAC_SDK_VERSION(10,12)
+    return AppleCryptoNative_RsaEncryptionPrimitive(publicKey, pbData, cbData, pbDataOut, pErrorOut);
+#else
     if (pEncryptedOut != NULL)
         *pEncryptedOut = NULL;
     if (pErrorOut != NULL)
@@ -129,16 +133,14 @@ int32_t AppleCryptoNative_RsaEncryptRaw(
         return kErrorBadInput;
     }
 
-    int32_t ret = kErrorSeeError;
     SecTransformRef encryptor = SecEncryptTransformCreate(publicKey, pErrorOut);
 
-    if (encryptor == NULL)
+    if (encryptor == NULL || *pErrorOut != NULL)
     {
-        return kErrorSeeError;
-    }
-    if (*pErrorOut != NULL)
-    {
-        CFRelease(encryptor);
+        if (encryptor != NULL)
+        {
+            CFRelease(encryptor);
+        }
         return kErrorSeeError;
     }
 
@@ -151,6 +153,7 @@ int32_t AppleCryptoNative_RsaEncryptRaw(
     int32_t ret = ExecuteCFDataTransform(encryptor, pbData, cbData, pEncryptedOut, pErrorOut);
     CFRelease(encryptor);
     return ret;
+#endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 
 
@@ -250,6 +253,9 @@ int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
 int32_t AppleCryptoNative_RsaDecryptRaw(
     SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut)
 {
+#if REQUIRE_MAC_SDK_VERSION(10,12)
+    return AppleCryptoNative_RsaDecryptionPrimitive(publicKey, pbData, cbData, pbDataOut, pErrorOut);
+#else
     if (pDecryptedOut != NULL)
         *pDecryptedOut = NULL;
     if (pErrorOut != NULL)
@@ -262,13 +268,12 @@ int32_t AppleCryptoNative_RsaDecryptRaw(
 
     SecTransformRef decryptor = SecDecryptTransformCreate(privateKey, pErrorOut);
 
-    if (decryptor == NULL)
+    if (decryptor == NULL || *pErrorOut != NULL)
     {
-        return kErrorSeeError;
-    }
-    if (*pErrorOut != NULL)
-    {
-        CFRelease(decryptor);
+        if (decryptor != NULL)
+        {
+            CFRelease(decryptor);
+        }
         return kErrorSeeError;
     }
 
@@ -281,6 +286,7 @@ int32_t AppleCryptoNative_RsaDecryptRaw(
     int32_t ret = ExecuteCFDataTransform(decryptor, pbData, cbData, pDecryptedOut, pErrorOut);
     CFRelease(decryptor);
     return ret;
+#endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 
 

@@ -4,11 +4,6 @@
 
 #include "pal_rsa.h"
 
-int32_t AppleCryptoNative_SupportsRsaPrimitives(void)
-{
-    return false;
-}
- 
 // #if REQUIRE_MAC_SDK_VERSION(10,12)
 
 //

@@ -38,7 +38,7 @@ internal static partial class Interop
             out SafeCFErrorHandle pErrorOut);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaDecryptionPrimitive(
+        private static extern int AppleCryptoNative_RsaDecryptRaw(
             SafeSecKeyRefHandle privateKey,
             ref byte pbData,
             int cbData,
@@ -46,7 +46,7 @@ internal static partial class Interop
             out SafeCFErrorHandle pErrorOut);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaEncryptionPrimitive(
+        private static extern int AppleCryptoNative_RsaEncryptRaw(
             SafeSecKeyRefHandle publicKey,
             ref byte pbData,
             int cbData,
@@ -316,7 +316,7 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
-            int returnValue = AppleCryptoNative_RsaEncryptionPrimitive(
+            int returnValue = AppleCryptoNative_RsaEncryptRaw(
                 publicKey,
                 ref MemoryMarshal.GetReference(source),
                 source.Length,
