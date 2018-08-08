@@ -55,6 +55,14 @@ DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedEncryptPkcs(
 DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedDecryptPkcs(
     SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut);
 
+DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedEncryptOaep(
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, PAL_HashAlgorithm algorithm,
+    CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut);
+
+DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedDecryptOaep(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, PAL_HashAlgorithm algorithm,
+    CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut);
+
 
 #endif // REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
 

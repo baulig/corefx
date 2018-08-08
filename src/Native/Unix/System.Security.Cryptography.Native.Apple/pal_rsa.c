@@ -97,5 +97,59 @@ int32_t AppleCryptoNative_RsaUnifiedDecryptPkcs(
         privateKey, pbData, cbData, pDecryptedOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionPKCS1, SecKeyCreateDecryptedData);
 }
 
+int32_t AppleCryptoNative_RsaUnifiedEncryptOaep(
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, PAL_HashAlgorithm algorithm,
+    CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut)
+{
+    SecKeyAlgorithm nativeAlgorithm;
+    switch (algorithm)
+    {
+        case PAL_SHA1:
+            nativeAlgorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA1;
+            break;
+        case PAL_SHA256:
+            nativeAlgorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA256;
+            break;
+        case PAL_SHA384:
+            nativeAlgorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA384;
+            break;
+        case PAL_SHA512:
+            nativeAlgorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA512;
+            break;
+        default:
+            return kErrorUnknownAlgorithm;
+    }
+
+    return RsaPrimitive(
+        publicKey, pbData, cbData, pEncryptedOut, pErrorOut, nativeAlgorithm, SecKeyCreateEncryptedData);
+}
+
+int32_t AppleCryptoNative_RsaUnifiedDecryptOaep(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, PAL_HashAlgorithm algorithm,
+    CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut)
+{
+    SecKeyAlgorithm nativeAlgorithm;
+    switch (algorithm)
+    {
+        case PAL_SHA1:
+            nativeAlgorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA1;
+            break;
+        case PAL_SHA256:
+            nativeAlgorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA256;
+            break;
+        case PAL_SHA384:
+            nativeAlgorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA384;
+            break;
+        case PAL_SHA512:
+            nativeAlgorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA512;
+            break;
+        default:
+            return kErrorUnknownAlgorithm;
+    }
+
+    return RsaPrimitive(
+        privateKey, pbData, cbData, pDecryptedOut, pErrorOut, nativeAlgorithm, SecKeyCreateDecryptedData);
+}
+
 
 #endif // REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)

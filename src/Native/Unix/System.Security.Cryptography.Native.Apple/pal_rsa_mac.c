@@ -6,8 +6,10 @@
 #include "pal_seckey_mac.h"
 #include "pal_version.h"
 
+#if !REQUIRE_MAC_SDK_VERSION(10,12)
 static int32_t ExecuteCFDataTransform(
     SecTransformRef xform, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
+#endif
 
 int32_t AppleCryptoNative_RsaGenerateKey(
     int32_t keySizeBits, SecKeychainRef tempKeychain, SecKeyRef* pPublicKey, SecKeyRef* pPrivateKey, int32_t* pOSStatus)
@@ -164,6 +166,7 @@ int32_t AppleCryptoNative_RsaEncryptionPrimitive(
 #endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 
+#if !REQUIRE_MAC_SDK_VERSION(10,12)
 
 static int32_t ExecuteOaepTransform(SecTransformRef xform,
                                     uint8_t* pbData,
@@ -188,6 +191,8 @@ static int32_t ExecuteOaepTransform(SecTransformRef xform,
     return ExecuteCFDataTransform(xform, pbData, cbData, pDataOut, pErrorOut);
 }
 
+#endif
+
 int32_t AppleCryptoNative_RsaDecryptOaep(SecKeyRef privateKey,
                                          uint8_t* pbData,
                                          int32_t cbData,
@@ -195,6 +200,9 @@ int32_t AppleCryptoNative_RsaDecryptOaep(SecKeyRef privateKey,
                                          CFDataRef* pDecryptedOut,
                                          CFErrorRef* pErrorOut)
 {
+#if REQUIRE_MAC_SDK_VERSION(10,12)
+    return AppleCryptoNative_RsaUnifiedDecryptOaep(privateKey, pbData, cbData, mfgAlgorithm, pDecryptedOut, pErrorOut);
+#else
     if (pDecryptedOut != NULL)
         *pDecryptedOut = NULL;
     if (pErrorOut != NULL)
@@ -219,6 +227,7 @@ int32_t AppleCryptoNative_RsaDecryptOaep(SecKeyRef privateKey,
     }
 
     return ret;
+#endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 
 int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
@@ -228,6 +237,9 @@ int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
                                          CFDataRef* pEncryptedOut,
                                          CFErrorRef* pErrorOut)
 {
+#if REQUIRE_MAC_SDK_VERSION(10,12)
+    return AppleCryptoNative_RsaUnifiedEncryptOaep(publicKey, pbData, cbData, mgfAlgorithm, pEncryptedOut, pErrorOut);
+#else
     if (pEncryptedOut != NULL)
         *pEncryptedOut = NULL;
     if (pErrorOut != NULL)
@@ -252,6 +264,7 @@ int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
     }
 
     return ret;
+#endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 
 int32_t AppleCryptoNative_RsaDecryptionPrimitive(
@@ -314,6 +327,7 @@ int32_t AppleCryptoNative_RsaVerificationPrimitive(
 }
 
 
+#if !REQUIRE_MAC_SDK_VERSION(10,12)
 
 static int32_t ExecuteCFDataTransform(
     SecTransformRef xform, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
@@ -378,4 +392,6 @@ cleanup:
 
     return ret;
 }
+
+#endif
 
