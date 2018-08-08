@@ -4,7 +4,12 @@
 
 #include "pal_rsa.h"
 
-#if REQUIRE_MAC_SDK_VERSION(10,12)
+int32_t AppleCryptoNative_SupportsRsaPrimitives(void)
+{
+    return false;
+}
+ 
+// #if REQUIRE_MAC_SDK_VERSION(10,12)
 
 //
 // These APIs are also available on iOS 10
@@ -83,4 +88,4 @@ int32_t AppleCryptoNative_RsaVerificationPrimitive(
         publicKey, pbData, cbData, pDataOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionRaw, SecKeyCreateEncryptedData);
 }
 
-#endif /* REQUIRE_MAC_SDK_VERSION(10_12) || REQUIRE_IOS_SDK_VERSION(10) */
+// #endif /* REQUIRE_MAC_SDK_VERSION(10_12) || REQUIRE_IOS_SDK_VERSION(10) */

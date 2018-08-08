@@ -116,6 +116,44 @@ int32_t AppleCryptoNative_RsaEncryptPkcs(
     return ret;
 }
 
+int32_t AppleCryptoNative_RsaEncryptRaw(
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut)
+{
+    if (pEncryptedOut != NULL)
+        *pEncryptedOut = NULL;
+    if (pErrorOut != NULL)
+        *pErrorOut = NULL;
+
+    if (publicKey == NULL || pbData == NULL || cbData < 0 || pEncryptedOut == NULL || pErrorOut == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    int32_t ret = kErrorSeeError;
+    SecTransformRef encryptor = SecEncryptTransformCreate(publicKey, pErrorOut);
+
+    if (encryptor == NULL)
+    {
+        return kErrorSeeError;
+    }
+    if (*pErrorOut != NULL)
+    {
+        CFRelease(encryptor);
+        return kErrorSeeError;
+    }
+
+    if (!SecTransformSetAttribute(encryptor, kSecPaddingKey, kSecPaddingNoneKey, pErrorOut))
+    {
+        CFRelease(encryptor);
+        return kErrorSeeError;
+    }
+
+    int32_t ret = ExecuteCFDataTransform(encryptor, pbData, cbData, pEncryptedOut, pErrorOut);
+    CFRelease(encryptor);
+    return ret;
+}
+
+
 #if REQUIRE_MAC_SDK_VERSION(10,8)
 
 static int32_t ExecuteOaepTransform(SecTransformRef xform,
@@ -208,6 +246,44 @@ int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
 }
 
 #endif /* REQUIRE_MAC_SDK_VERSION(10,8) */
+
+int32_t AppleCryptoNative_RsaDecryptRaw(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut)
+{
+    if (pDecryptedOut != NULL)
+        *pDecryptedOut = NULL;
+    if (pErrorOut != NULL)
+        *pErrorOut = NULL;
+
+    if (privateKey == NULL || pbData == NULL || cbData < 0 || pDecryptedOut == NULL || pErrorOut == NULL)
+    {
+        return kErrorBadInput;
+    }
+
+    SecTransformRef decryptor = SecDecryptTransformCreate(privateKey, pErrorOut);
+
+    if (decryptor == NULL)
+    {
+        return kErrorSeeError;
+    }
+    if (*pErrorOut != NULL)
+    {
+        CFRelease(decryptor);
+        return kErrorSeeError;
+    }
+
+    if (!SecTransformSetAttribute(decryptor, kSecPaddingKey, kSecPaddingNoneKey, pErrorOut))
+    {
+        CFRelease(decryptor);
+        return kErrorSeeError;
+    }
+
+    int32_t ret = ExecuteCFDataTransform(decryptor, pbData, cbData, pDecryptedOut, pErrorOut);
+    CFRelease(decryptor);
+    return ret;
+}
+
+
 
 static int32_t ExecuteCFDataTransform(
     SecTransformRef xform, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)

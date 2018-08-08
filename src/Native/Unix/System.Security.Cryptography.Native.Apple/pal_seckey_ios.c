@@ -52,8 +52,12 @@ int32_t AppleCryptoNative_SecKeyEncrypt(
             return kErrorBadInput;
     }
 
+    fprintf (stderr, "SEC KEY ENCRYPT: %d,%d - %p,%d - %p,%d", padding, nativePadding, pbData, cbData, pbCipherOut, *cbCipherLen);
+
     size_t cipherLen = *cbCipherLen;
     *pOSStatus = SecKeyEncrypt(key, nativePadding, pbData, (size_t)cbData, pbCipherOut, &cipherLen);
+
+    fprintf (stderr, "SEC KEY ENCRYPT #1: %d - %ld\n", *pOSStatus, cipherLen);
 
     if (*pOSStatus == errSecParam && *cbCipherLen < SecKeyGetBlockSize(key))
     {
@@ -89,8 +93,12 @@ int32_t AppleCryptoNative_SecKeyDecrypt(
             return kErrorBadInput;
     }
 
+    fprintf (stderr, "SEC KEY DECRYPT: %d,%d - %p,%d - %p,%d", padding, nativePadding, pbData, cbData, pbPlainOut, *cbPlainLen);
+
     size_t plainLen = *cbPlainLen;
     *pOSStatus = SecKeyDecrypt(key, nativePadding, pbData, (size_t)cbData, pbPlainOut, &plainLen);
+
+    fprintf (stderr, "SEC KEY DECRYPT #1: %d - %ld\n", *pOSStatus, plainLen);
 
     if (*pOSStatus == errSecParam && *cbPlainLen < SecKeyGetBlockSize(key))
     {

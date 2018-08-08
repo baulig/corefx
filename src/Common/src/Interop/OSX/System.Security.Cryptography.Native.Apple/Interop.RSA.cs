@@ -121,6 +121,14 @@ internal static partial class Interop
             out SafeCFDataHandle pEncryptedOut,
             out SafeCFErrorHandle pErrorOut);
 
+        [DllImport(Libraries.AppleCryptoNative, EntryPoint = "AppleCryptoNative_RsaDecryptRaw")]
+        private static extern int RsaDecryptRaw(
+            SafeSecKeyRefHandle publicKey,
+            ref byte pbData,
+            int cbData,
+            out SafeCFDataHandle pEncryptedOut,
+            out SafeCFErrorHandle pErrorOut);
+
         internal static void RsaGenerateKey(
             int keySizeInBits,
             out SafeSecKeyRefHandle pPublicKey,
@@ -283,7 +291,16 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
+            #if FIXME
             int returnValue = AppleCryptoNative_RsaDecryptionPrimitive(
+                privateKey,
+                ref MemoryMarshal.GetReference(source),
+                source.Length,
+                out SafeCFDataHandle cfData,
+                out SafeCFErrorHandle cfError);
+                #endif
+
+            int returnValue = RsaDecryptRaw(
                 privateKey,
                 ref MemoryMarshal.GetReference(source),
                 source.Length,

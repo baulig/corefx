@@ -25,6 +25,9 @@ Follows pal_seckey return conventions.
 DLLEXPORT int32_t AppleCryptoNative_RsaDecryptPkcs(
     SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut);
 
+DLLEXPORT int32_t AppleCryptoNative_RsaDecryptRaw(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut);
+
 /*
 Encrypt pbData for the provided publicKey using PKCS#1 padding.
 
@@ -32,6 +35,10 @@ Follows pal_seckey return conventions.
 */
 DLLEXPORT int32_t AppleCryptoNative_RsaEncryptPkcs(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut);
+
+DLLEXPORT int32_t AppleCryptoNative_RsaEncryptRaw(
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut);
+
 
 #if REQUIRE_MAC_SDK_VERSION(10,8)
 
