@@ -28,6 +28,7 @@ namespace System.Security.Cryptography.Hashing.Algorithms.Tests
         }
 
         [Fact]
+        [SkipOnTargetFramework(TargetFrameworkMonikers.Mono)]
         public void Sha1_Rfc3174_MultiBlock()
         {
             VerifyMultiBlock("ab", "c", "A9993E364706816ABA3E25717850C26C9CD0D89D", "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709");
