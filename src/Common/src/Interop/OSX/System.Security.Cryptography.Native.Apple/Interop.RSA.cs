@@ -22,7 +22,7 @@ internal static partial class Interop
             out int pOSStatus);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaSignRaw(
+        private static extern int AppleCryptoNative_RsaSignaturePrimitive(
             SafeSecKeyRefHandle privateKey,
             ref byte pbData,
             int cbData,
@@ -30,7 +30,7 @@ internal static partial class Interop
             out SafeCFErrorHandle pErrorOut);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaVerifyRaw(
+        private static extern int AppleCryptoNative_RsaVerificationPrimitive(
             SafeSecKeyRefHandle publicKey,
             ref byte pbData,
             int cbData,
@@ -38,7 +38,7 @@ internal static partial class Interop
             out SafeCFErrorHandle pErrorOut);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaDecryptRaw(
+        private static extern int AppleCryptoNative_RsaDecryptionPrimitive(
             SafeSecKeyRefHandle privateKey,
             ref byte pbData,
             int cbData,
@@ -46,7 +46,7 @@ internal static partial class Interop
             out SafeCFErrorHandle pErrorOut);
 
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaEncryptRaw(
+        private static extern int AppleCryptoNative_RsaEncryptionPrimitive(
             SafeSecKeyRefHandle publicKey,
             ref byte pbData,
             int cbData,
@@ -115,14 +115,6 @@ internal static partial class Interop
 
         [DllImport(Libraries.AppleCryptoNative, EntryPoint = "AppleCryptoNative_RsaDecryptPkcs")]
         private static extern int RsaDecryptPkcs(
-            SafeSecKeyRefHandle publicKey,
-            ref byte pbData,
-            int cbData,
-            out SafeCFDataHandle pEncryptedOut,
-            out SafeCFErrorHandle pErrorOut);
-
-        [DllImport(Libraries.AppleCryptoNative, EntryPoint = "AppleCryptoNative_RsaDecryptRaw")]
-        private static extern int RsaDecryptRaw(
             SafeSecKeyRefHandle publicKey,
             ref byte pbData,
             int cbData,
@@ -291,16 +283,7 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
-            #if FIXME
             int returnValue = AppleCryptoNative_RsaDecryptionPrimitive(
-                privateKey,
-                ref MemoryMarshal.GetReference(source),
-                source.Length,
-                out SafeCFDataHandle cfData,
-                out SafeCFErrorHandle cfError);
-                #endif
-
-            int returnValue = RsaDecryptRaw(
                 privateKey,
                 ref MemoryMarshal.GetReference(source),
                 source.Length,
@@ -316,7 +299,7 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
-            int returnValue = AppleCryptoNative_RsaEncryptRaw(
+            int returnValue = AppleCryptoNative_RsaEncryptionPrimitive(
                 publicKey,
                 ref MemoryMarshal.GetReference(source),
                 source.Length,
@@ -332,7 +315,7 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
-            int returnValue = AppleCryptoNative_RsaSignRaw(
+            int returnValue = AppleCryptoNative_RsaSignaturePrimitive(
                 privateKey,
                 ref MemoryMarshal.GetReference(source),
                 source.Length,
@@ -348,7 +331,7 @@ internal static partial class Interop
             Span<byte> destination,
             out int bytesWritten)
         {
-            int returnValue = AppleCryptoNative_RsaVerifyRaw(
+            int returnValue = AppleCryptoNative_RsaVerificationPrimitive(
                 publicKey,
                 ref MemoryMarshal.GetReference(source),
                 source.Length,
