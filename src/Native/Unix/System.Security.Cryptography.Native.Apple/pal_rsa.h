@@ -11,12 +11,18 @@
 
 #include <Security/Security.h>
 
+#if REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
+
+//
+// New Unified APIs, which are available on macOS 10.12+ and iOS 10+.
+//
+
 /*
 Apply an RSA private key to a signing operation on data which was already padded.
 
 Follows pal_seckey return conventions.
 */
-DLLEXPORT int32_t AppleCryptoNative_RsaSignaturePrimitive(
+DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedSignaturePrimitive(
     SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
 
 /*
@@ -24,7 +30,7 @@ Apply an RSA private key to an encryption operation to emit data which is still 
 
 Follows pal_seckey return conventions.
 */
-DLLEXPORT int32_t AppleCryptoNative_RsaDecryptionPrimitive(
+DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedDecryptionPrimitive(
     SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
 
 /*
@@ -32,7 +38,7 @@ Apply an RSA public key to an encryption operation on data which was already pad
 
 Follows pal_seckey return conventions.
 */
-DLLEXPORT int32_t AppleCryptoNative_RsaEncryptionPrimitive(
+DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedEncryptionPrimitive(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
 
 /*
@@ -40,5 +46,8 @@ Apply an RSA public key to a signing operation to emit data which is still padde
 
 Follows pal_seckey return conventions.
 */
-DLLEXPORT int32_t AppleCryptoNative_RsaVerificationPrimitive(
+DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedVerificationPrimitive(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
+
+#endif // REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
+

@@ -117,11 +117,11 @@ int32_t AppleCryptoNative_RsaEncryptPkcs(
     return ret;
 }
 
-int32_t AppleCryptoNative_RsaEncryptRaw(
+int32_t AppleCryptoNative_RsaEncryptionPrimitive(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut)
 {
 #if REQUIRE_MAC_SDK_VERSION(10,12)
-    return AppleCryptoNative_RsaEncryptionPrimitive(publicKey, pbData, cbData, pEncryptedOut, pErrorOut);
+    return AppleCryptoNative_RsaUnifiedEncryptionPrimitive(publicKey, pbData, cbData, pEncryptedOut, pErrorOut);
 #else
     if (pEncryptedOut != NULL)
         *pEncryptedOut = NULL;
@@ -246,11 +246,11 @@ int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
     return ret;
 }
 
-int32_t AppleCryptoNative_RsaDecryptRaw(
+int32_t AppleCryptoNative_RsaDecryptionPrimitive(
     SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut)
 {
 #if REQUIRE_MAC_SDK_VERSION(10,12)
-    return AppleCryptoNative_RsaDecryptionPrimitive(privateKey, pbData, cbData, pDecryptedOut, pErrorOut);
+    return AppleCryptoNative_RsaUnifiedDecryptionPrimitive(privateKey, pbData, cbData, pDecryptedOut, pErrorOut);
 #else
     if (pDecryptedOut != NULL)
         *pDecryptedOut = NULL;
@@ -285,23 +285,23 @@ int32_t AppleCryptoNative_RsaDecryptRaw(
 #endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 
-int32_t AppleCryptoNative_RsaSignRaw(
+int32_t AppleCryptoNative_RsaSignaturePrimitive(
     SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut)
 {
 #if REQUIRE_MAC_SDK_VERSION(10,12)
-    return AppleCryptoNative_RsaSignaturePrimitive(privateKey, pbData, cbData, pSignatureOut, pErrorOut);
+    return AppleCryptoNative_RsaUnifiedSignaturePrimitive(privateKey, pbData, cbData, pSignatureOut, pErrorOut);
 #else
-    return AppleCryptoNative_RsaDecryptRaw(privateKey, pbData, cbData, pSignatureOut, pErrorOut);
+    return AppleCryptoNative_RsaDecryptionPrimitive(privateKey, pbData, cbData, pSignatureOut, pErrorOut);
 #endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 
-int32_t AppleCryptoNative_RsaVerifyRaw(
+int32_t AppleCryptoNative_RsaVerificationPrimitive(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut)
 {
 #if REQUIRE_MAC_SDK_VERSION(10,12)
     return AppleCryptoNative_RsaVerificationPrimitive(privateKey, pbData, cbData, pSignatureOut, pErrorOut);
 #else
-    return AppleCryptoNative_RsaEncryptRaw(publicKey, pbData, cbData, pSignatureOut, pErrorOut);
+    return AppleCryptoNative_RsaEncryptionPrimitive(publicKey, pbData, cbData, pSignatureOut, pErrorOut);
 #endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 

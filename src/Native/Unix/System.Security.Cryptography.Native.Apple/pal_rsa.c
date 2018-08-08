@@ -7,7 +7,7 @@
 #if REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
 
 //
-// These APIs are also available on iOS 10
+// New Unified APIs, which are available on macOS 10.12+ and iOS 10+.
 //
 
 static int32_t RsaPrimitive(SecKeyRef key,
@@ -53,28 +53,28 @@ static int32_t RsaPrimitive(SecKeyRef key,
     return 1;
 }
 
-int32_t AppleCryptoNative_RsaSignaturePrimitive(
+int32_t AppleCryptoNative_RsaUnifiedSignaturePrimitive(
     SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
 {
     return RsaPrimitive(
         privateKey, pbData, cbData, pDataOut, pErrorOut, kSecKeyAlgorithmRSASignatureRaw, SecKeyCreateSignature);
 }
 
-int32_t AppleCryptoNative_RsaDecryptionPrimitive(
+int32_t AppleCryptoNative_RsaUnifiedDecryptionPrimitive(
     SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
 {
     return RsaPrimitive(
         privateKey, pbData, cbData, pDataOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionRaw, SecKeyCreateDecryptedData);
 }
 
-int32_t AppleCryptoNative_RsaEncryptionPrimitive(
+int32_t AppleCryptoNative_RsaUnifiedEncryptionPrimitive(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
 {
     return RsaPrimitive(
         publicKey, pbData, cbData, pDataOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionRaw, SecKeyCreateEncryptedData);
 }
 
-int32_t AppleCryptoNative_RsaVerificationPrimitive(
+int32_t AppleCryptoNative_RsaUnifiedVerificationPrimitive(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut)
 {
     // Since there's not an API which will give back the still-padded signature block with
