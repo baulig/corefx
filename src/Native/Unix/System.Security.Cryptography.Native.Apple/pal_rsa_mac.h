@@ -40,7 +40,6 @@ DLLEXPORT int32_t AppleCryptoNative_RsaEncryptRaw(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut);
 
 
-#if REQUIRE_MAC_SDK_VERSION(10,8)
 
 /*
 Decrypt the contents of pbData using the provided privateKey under OAEP padding.
@@ -66,4 +65,3 @@ DLLEXPORT int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
                                                    CFDataRef* pEncryptedOut,
                                                    CFErrorRef* pErrorOut);
 
-#endif

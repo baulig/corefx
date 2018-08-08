@@ -18,7 +18,6 @@ int32_t AppleCryptoNative_EccGenerateKey(
     if (pPublicKey == NULL || pPrivateKey == NULL || pOSStatus == NULL)
         return kErrorBadInput;
 
-#if REQUIRE_MAC_SDK_VERSION(10,9)
     CFMutableDictionaryRef attributes = CFDictionaryCreateMutable(NULL, 2, &kCFTypeDictionaryKeyCallBacks, NULL);
 
     CFNumberRef cfKeySizeValue = CFNumberCreate(NULL, kCFNumberIntType, &keySizeBits);
@@ -54,8 +53,5 @@ int32_t AppleCryptoNative_EccGenerateKey(
 
     *pOSStatus = status;
     return status == noErr;
-#else
-    return PAL_Error_Platform;
-#endif
 }
 

@@ -5,7 +5,7 @@
 #include "pal_signverify.h"
 #include "pal_error.h"
 
-#if REQUIRE_MAC_SDK_VERSION(10,7)
+#if REQUIRE_MAC
 
 static int32_t ExecuteSignTransform(SecTransformRef signer, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut);
 static int32_t ExecuteVerifyTransform(SecTransformRef verifier, CFErrorRef* pErrorOut);
@@ -13,7 +13,7 @@ static int32_t ExecuteVerifyTransform(SecTransformRef verifier, CFErrorRef* pErr
 static int32_t ConfigureSignVerifyTransform(
     SecTransformRef xform, CFDataRef cfDataHash, PAL_HashAlgorithm, bool useDigestAlgorithm, CFErrorRef* pErrorOut);
 
-#endif /* REQUIRE_MAC_SDK_VERSION(10,7) */
+#endif // REQUIRE_MAC
 
 static int32_t GenerateSignature(SecKeyRef privateKey,
                                  uint8_t* pbDataHash,
@@ -43,7 +43,7 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
 
     int32_t ret = PAL_Error_Platform;
 
-#if REQUIRE_MAC_SDK_VERSION(10,7)
+#if REQUIRE_MAC
 
     SecTransformRef signer = SecSignTransformCreate(privateKey, pErrorOut);
     ret = PAL_Error_SeeError;
@@ -138,7 +138,7 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
         ret = 1;
     }
 
-#endif /* REQUIRE_IOS */
+#endif // REQUIRE_IOS
 
     CFRelease(dataHash);
     return ret;
@@ -199,7 +199,7 @@ static int32_t VerifySignature(SecKeyRef publicKey,
         return PAL_Error_UnknownState;
     }
 
-#if REQUIRE_MAC_SDK_VERSION(10,7)
+#if REQUIRE_MAC
 
     SecTransformRef verifier = SecVerifyTransformCreate(publicKey, signature, pErrorOut);
     ret = PAL_Error_SeeError;
@@ -261,7 +261,7 @@ static int32_t VerifySignature(SecKeyRef publicKey,
 
     ret = SecKeyVerifySignature(publicKey, algorithm, dataHash, signature, pErrorOut);
 
-#endif
+#endif // REQUIRE_IOS
 
     CFRelease(dataHash);
     CFRelease(signature);
@@ -294,7 +294,7 @@ int32_t AppleCryptoNative_VerifySignature(SecKeyRef publicKey,
         publicKey, pbDataHash, cbDataHash, pbSignature, cbSignature, PAL_Unknown, false, pOSStatusOut, pErrorOut);
 }
 
-#if REQUIRE_MAC_SDK_VERSION(10,7)
+#if REQUIRE_MAC
 
 static int32_t ExecuteSignTransform(SecTransformRef signer, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut)
 {
@@ -436,4 +436,4 @@ static int32_t ConfigureSignVerifyTransform(SecTransformRef xform,
     return 1;
 }
 
-#endif /* REQUIRE_MAC_SDK_VERSION(10,7) */
+#endif // REQUIRE_MAC
