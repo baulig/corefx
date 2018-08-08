@@ -83,4 +83,19 @@ int32_t AppleCryptoNative_RsaUnifiedVerificationPrimitive(
         publicKey, pbData, cbData, pDataOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionRaw, SecKeyCreateEncryptedData);
 }
 
+int32_t AppleCryptoNative_RsaUnifiedEncryptPkcs(
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut)
+{
+    return RsaPrimitive(
+        publicKey, pbData, cbData, pEncryptedOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionPKCS1, SecKeyCreateEncryptedData);
+}
+
+int32_t AppleCryptoNative_RsaUnifiedDecryptPkcs(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut)
+{
+    return RsaPrimitive(
+        privateKey, pbData, cbData, pDecryptedOut, pErrorOut, kSecKeyAlgorithmRSAEncryptionPKCS1, SecKeyCreateDecryptedData);
+}
+
+
 #endif // REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)

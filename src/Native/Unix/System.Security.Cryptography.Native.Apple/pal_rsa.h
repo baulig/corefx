@@ -49,5 +49,12 @@ Follows pal_seckey return conventions.
 DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedVerificationPrimitive(
     SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDataOut, CFErrorRef* pErrorOut);
 
+DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedEncryptPkcs(
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pEncryptedOut, CFErrorRef* pErrorOut);
+
+DLLEXPORT int32_t AppleCryptoNative_RsaUnifiedDecryptPkcs(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pDecryptedOut, CFErrorRef* pErrorOut);
+
+
 #endif // REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
 
