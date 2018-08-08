@@ -291,75 +291,17 @@ int32_t AppleCryptoNative_RsaSignRaw(
 #if REQUIRE_MAC_SDK_VERSION(10,12)
     return AppleCryptoNative_RsaSignaturePrimitive(privateKey, pbData, cbData, pSignatureOut, pErrorOut);
 #else
-    if (pSignatureOut != NULL)
-        *pSignatureOut = NULL;
-    if (pErrorOut != NULL)
-        *pErrorOut = NULL;
-
-    if (privateKey == NULL || pbData == NULL || cbData < 0 || pSignatureOut == NULL || pErrorOut == NULL)
-    {
-        return kErrorBadInput;
-    }
-
-    SecTransformRef xform = SecSignTransformCreate(privateKey, pErrorOut);
-
-    if (xform == NULL || *pErrorOut != NULL)
-    {
-        if (xform != NULL)
-        {
-            CFRelease(xform);
-        }
-        return kErrorSeeError;
-    }
-
-    if (!SecTransformSetAttribute(xform, kSecPaddingKey, kSecPaddingNoneKey, pErrorOut))
-    {
-        CFRelease(decryptor);
-        return kErrorSeeError;
-    }
-
-    int32_t ret = ExecuteCFDataTransform(decryptor, pbData, cbData, pDecryptedOut, pErrorOut);
-    CFRelease(decryptor);
-    return ret;
+    return AppleCryptoNative_RsaDecryptRaw(privateKey, pbData, cbData, pSignatureOut, pErrorOut);
 #endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 
 int32_t AppleCryptoNative_RsaVerifyRaw(
-    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut)
+    SecKeyRef publicKey, uint8_t* pbData, int32_t cbData, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut)
 {
 #if REQUIRE_MAC_SDK_VERSION(10,12)
     return AppleCryptoNative_RsaVerificationPrimitive(privateKey, pbData, cbData, pSignatureOut, pErrorOut);
 #else
-    if (pSignatureOut != NULL)
-        *pSignatureOut = NULL;
-    if (pErrorOut != NULL)
-        *pErrorOut = NULL;
-
-    if (privateKey == NULL || pbData == NULL || cbData < 0 || pSignatureOut == NULL || pErrorOut == NULL)
-    {
-        return kErrorBadInput;
-    }
-
-    SecTransformRef xform = SecVerifyTransformCreate(privateKey, pErrorOut);
-
-    if (xform == NULL || *pErrorOut != NULL)
-    {
-        if (xform != NULL)
-        {
-            CFRelease(xform);
-        }
-        return kErrorSeeError;
-    }
-
-    if (!SecTransformSetAttribute(xform, kSecPaddingKey, kSecPaddingNoneKey, pErrorOut))
-    {
-        CFRelease(decryptor);
-        return kErrorSeeError;
-    }
-
-    int32_t ret = ExecuteCFDataTransform(decryptor, pbData, cbData, pDecryptedOut, pErrorOut);
-    CFRelease(decryptor);
-    return ret;
+    return AppleCryptoNative_RsaEncryptRaw(publicKey, pbData, cbData, pSignatureOut, pErrorOut);
 #endif // REQUIRE_MAC_SDK_VERSION(10,12)
 }
 
