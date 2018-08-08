@@ -65,3 +65,8 @@ DLLEXPORT int32_t AppleCryptoNative_RsaEncryptOaep(SecKeyRef publicKey,
                                                    CFDataRef* pEncryptedOut,
                                                    CFErrorRef* pErrorOut);
 
+DLLEXPORT int32_t AppleCryptoNative_RsaSignRaw(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut);
+
+DLLEXPORT int32_t AppleCryptoNative_RsaVerifyRaw(
+    SecKeyRef privateKey, uint8_t* pbData, int32_t cbData, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut);
