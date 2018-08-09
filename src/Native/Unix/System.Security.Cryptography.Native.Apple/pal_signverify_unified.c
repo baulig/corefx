@@ -5,6 +5,8 @@
 #include "pal_signverify_unified.h"
 #include "pal_error.h"
 
+#if REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
+
 int32_t AppleCryptoNative_UnifiedGenerateSignature(SecKeyRef privateKey,
                                                    uint8_t* pbDataHash,
                                                    int32_t cbDataHash,
@@ -170,3 +172,5 @@ int32_t AppleCryptoNative_UnifiedVerifySignature(SecKeyRef publicKey,
 
     return ret;
 }
+
+#endif // REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
