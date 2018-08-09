@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 #include "pal_rsa.h"
-#include "pal_rsa_unified.h"
 #include "pal_version.h"
 #include "pal_error.h"
+
+#if REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
+#include "pal_rsa_unified.h"
+#endif
 
 #if REQUIRE_MAC_PLATFORM
 #include "pal_rsa_mac.h"

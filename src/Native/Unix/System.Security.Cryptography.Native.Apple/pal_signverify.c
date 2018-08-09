@@ -3,7 +3,24 @@
 // See the LICENSE file in the project root for more information.
 
 #include "pal_signverify.h"
+#include "pal_version.h"
 #include "pal_error.h"
+
+#if REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
+#include "pal_signverify_unified.h"
+#endif
+
+#if REQUIRE_MAC_PLATFORM
+// #include "pal_signverify_mac.h"
+#endif
+
+static bool UseUnifiedApi (void)
+{
+    // FIXME: check macOS version
+    return true;
+}
+
+
 
 #if REQUIRE_MAC_PLATFORM
 
@@ -24,6 +41,15 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
                                  int32_t *pOSStatusOut,
                                  CFErrorRef* pErrorOut)
 {
+#if REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
+    if (UseUnifiedApi ())
+    {
+        return AppleCryptoNative_UnifiedGenerateSignature(
+            privateKey, pbDataHash, cbDataHash, hashAlgorithm, useHashAlgorithm,
+            pSignatureOut, pOSStatusOut, pErrorOut);
+    }
+#endif
+
     if (pSignatureOut != NULL)
         *pSignatureOut = NULL;
     if (pErrorOut != NULL)
