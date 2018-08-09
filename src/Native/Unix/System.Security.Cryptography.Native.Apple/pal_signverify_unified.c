@@ -31,66 +31,53 @@ int32_t AppleCryptoNative_UnifiedGenerateSignature(SecKeyRef privateKey,
         return PAL_Error_UnknownState;
     }
 
-    int32_t ret = PAL_Error_Platform;
+    fprintf (stderr, "UNIFIED GENERATE SIGNATURE: %p,%d - %d,%d\n",
+             pbDataHash, cbDataHash, hashAlgorithm, useHashAlgorithm);
+
+    SecKeyAlgorithm algorithm;
 
     if (!useHashAlgorithm)
     {
-        size_t outputLen = SecKeyGetBlockSize(privateKey) * 4;
-        uint8_t *output = malloc(outputLen);
-        if (output == NULL)
+        algorithm = kSecKeyAlgorithmRSASignatureRaw;
+        if (!SecKeyIsAlgorithmSupported(privateKey, kSecKeyOperationTypeSign, algorithm))
         {
-            CFRelease(dataHash);
-            return kErrorUnknownState;
-        }
+            fprintf(stderr, "UNIFIED GENERATE SIGNATURE #1!\n");
+            algorithm = kSecKeyAlgorithmECDSASignatureDigestX962;
 
-        *pOSStatusOut = SecKeyRawSign(privateKey, kSecPaddingNone, pbDataHash, cbDataHash, output, &outputLen);
-
-        if (*pOSStatusOut == noErr)
-        {
-            *pSignatureOut = CFDataCreate(NULL, output, outputLen);
-            if (*pSignatureOut == NULL)
+            if (!SecKeyIsAlgorithmSupported(privateKey, kSecKeyOperationTypeSign, algorithm))
             {
-                ret = kErrorUnknownState;
-            }
-            else
-            {
-                ret = 1;
+                fprintf(stderr, "UNIFIED GENERATE SIGNATURE #2!\n");
+                CFRelease(dataHash);
+                return PAL_Error_UnknownAlgorithm;
             }
         }
-        else
-        {
-            ret = kErrorSeeStatus;
-        }
-
-        free(output);
-        CFRelease(dataHash);
-        return ret;
     }
-
-    // These APIs require iOS 10.0+, macOS 10.12+, tvOS 10.0+, watchOS 3.0+
-    // FIXME: should add REQUIRE_IOS_SDK_VERSION(10,0) once we figured out the per-version compilation issue.
-
-    SecKeyAlgorithm algorithm;
-    switch (hashAlgorithm)
+    else
     {
-        case PAL_SHA1:
-            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1;
-            break;
-        case PAL_SHA256:
-            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256;
-            break;
-        case PAL_SHA384:
-            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384;
-            break;
-        case PAL_SHA512:
-            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512;
-            break;
-        default:
-            return kErrorUnknownAlgorithm;
+        switch (hashAlgorithm)
+        {
+            case PAL_SHA1:
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1;
+                break;
+            case PAL_SHA256:
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256;
+                break;
+            case PAL_SHA384:
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384;
+                break;
+            case PAL_SHA512:
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512;
+                break;
+            default:
+                return kErrorUnknownAlgorithm;
+        }
     }
 
     *pSignatureOut = SecKeyCreateSignature(privateKey, algorithm, dataHash, pErrorOut);
 
+    fprintf(stderr, "UNIFIED GENERATE SIGNATURE #3: %p,%p\n", *pSignatureOut, *pErrorOut);
+
+    int32_t ret;
     if (*pErrorOut != NULL || *pSignatureOut == NULL)
     {
         if (*pSignatureOut != NULL)
@@ -127,8 +114,6 @@ int32_t AppleCryptoNative_UnifiedVerifySignature(SecKeyRef publicKey,
         pOSStatusOut == NULL || pErrorOut == NULL)
         return PAL_Error_BadInput;
 
-    int32_t ret = PAL_Error_Platform;
-
     CFDataRef dataHash = CFDataCreateWithBytesNoCopy(NULL, pbDataHash, cbDataHash, kCFAllocatorNull);
     if (dataHash == NULL)
     {
@@ -142,47 +127,43 @@ int32_t AppleCryptoNative_UnifiedVerifySignature(SecKeyRef publicKey,
         return PAL_Error_UnknownState;
     }
 
+    SecKeyAlgorithm algorithm;
     if (!useHashAlgorithm)
     {
-        *pOSStatusOut = SecKeyRawVerify(publicKey, kSecPaddingNone, pbDataHash, cbDataHash, pbSignature, cbSignature);
-
-        CFRelease(dataHash);
-        CFRelease(signature);
-
-        switch (*pOSStatusOut)
+        algorithm = kSecKeyAlgorithmRSASignatureRaw;
+        if (!SecKeyIsAlgorithmSupported(publicKey, kSecKeyOperationTypeVerify, algorithm))
         {
-            case noErr:
-                return 1;
-            case -9809: // errSSLCrypto
-                return 0;
+            algorithm = kSecKeyAlgorithmECDSASignatureDigestX962;
+
+            if (!SecKeyIsAlgorithmSupported(publicKey, kSecKeyOperationTypeVerify, algorithm))
+            {
+                CFRelease(dataHash);
+                return PAL_Error_UnknownAlgorithm;
+            }
+        }
+    }
+    else
+    {
+        switch (hashAlgorithm)
+        {
+            case PAL_SHA1:
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1;
+                break;
+            case PAL_SHA256:
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256;
+                break;
+            case PAL_SHA384:
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384;
+                break;
+            case PAL_SHA512:
+                algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512;
+                break;
             default:
-                return kErrorSeeStatus;
+                return kErrorUnknownAlgorithm;
         }
     }
 
-    // These APIs require iOS 10.0+, macOS 10.12+, tvOS 10.0+, watchOS 3.0+
-    // FIXME: should add REQUIRE_IOS_SDK_VERSION(10,0) once we figured out the per-version compilation issue.
-
-    SecKeyAlgorithm algorithm;
-    switch (hashAlgorithm)
-    {
-        case PAL_SHA1:
-            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1;
-            break;
-        case PAL_SHA256:
-            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256;
-            break;
-        case PAL_SHA384:
-            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384;
-            break;
-        case PAL_SHA512:
-            algorithm = kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512;
-            break;
-        default:
-            return kErrorUnknownAlgorithm;
-    }
-
-    ret = SecKeyVerifySignature(publicKey, algorithm, dataHash, signature, pErrorOut);
+    int32_t ret = SecKeyVerifySignature(publicKey, algorithm, dataHash, signature, pErrorOut);
 
     CFRelease(dataHash);
     CFRelease(signature);

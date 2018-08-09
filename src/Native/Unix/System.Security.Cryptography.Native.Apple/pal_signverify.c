@@ -203,6 +203,15 @@ static int32_t VerifySignature(SecKeyRef publicKey,
                                int32_t *pOSStatusOut,
                                CFErrorRef* pErrorOut)
 {
+#if REQUIRE_MAC_SDK_VERSION(10,12) || REQUIRE_IOS_SDK_VERSION(10,0)
+    if (UseUnifiedApi ())
+    {
+        return AppleCryptoNative_UnifiedVerifySignature(
+            publicKey, pbDataHash, cbDataHash, pbSignature, cbSignature,
+            hashAlgorithm, useHashAlgorithm, pOSStatusOut, pErrorOut);
+    }
+#endif
+
     if (pErrorOut != NULL)
         *pErrorOut = NULL;
 
