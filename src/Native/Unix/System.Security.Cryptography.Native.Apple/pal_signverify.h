@@ -8,6 +8,7 @@
 #include "pal_seckey.h"
 #include "pal_compiler.h"
 #include "pal_version.h"
+#include "pal_error.h"
 
 #include <Security/Security.h>
 
