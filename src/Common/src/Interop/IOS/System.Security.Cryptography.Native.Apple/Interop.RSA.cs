@@ -16,13 +16,6 @@ internal static partial class Interop
     internal static partial class AppleCrypto
     {
         [DllImport(Libraries.AppleCryptoNative)]
-        private static extern int AppleCryptoNative_RsaGenerateKey(
-            int keySizeInBits,
-            out SafeSecKeyRefHandle pPublicKey,
-            out SafeSecKeyRefHandle pPrivateKey,
-            out int pOSStatus);
-
-        [DllImport(Libraries.AppleCryptoNative)]
         private static extern int AppleCryptoNative_SecKeyEncrypt(
             SafeSecKeyRefHandle key,
             PAL_PaddingMode padding,
@@ -61,41 +54,6 @@ internal static partial class Interop
             ref byte pbSignature,
             ref int cbSignatureLen,
             out int pOSStatus);
-
-        internal static void RsaGenerateKey(
-            int keySizeInBits,
-            out SafeSecKeyRefHandle pPublicKey,
-            out SafeSecKeyRefHandle pPrivateKey)
-        {
-            SafeSecKeyRefHandle keychainPublic;
-            SafeSecKeyRefHandle keychainPrivate;
-            int osStatus;
-
-            int result = AppleCryptoNative_RsaGenerateKey(
-                keySizeInBits,
-                out keychainPublic,
-                out keychainPrivate,
-                out osStatus);
-
-            if (result == 1)
-            {
-                pPublicKey = keychainPublic;
-                pPrivateKey = keychainPrivate;
-                return;
-            }
-
-            using (keychainPrivate)
-            using (keychainPublic)
-            {
-                if (result == 0)
-                {
-                    throw CreateExceptionForOSStatus(osStatus);
-                }
-
-                Debug.Fail($"Unexpected result from AppleCryptoNative_RsaGenerateKey: {result}");
-                throw new CryptographicException();
-            }
-        }
 
         private delegate int SecKeyMobileTransform(
             SafeSecKeyRefHandle key,
