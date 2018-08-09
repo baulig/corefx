@@ -6,7 +6,8 @@
 
 #include "pal_signverify.h"
 
-int32_t AppleCryptoNative_MacGenerateSignature(SecKeyRef privateKey,
+
+int32_t AppleCryptoNative_iOSGenerateSignature(SecKeyRef privateKey,
                                                uint8_t* pbDataHash,
                                                int32_t cbDataHash,
                                                PAL_HashAlgorithm hashAlgorithm,
@@ -15,7 +16,7 @@ int32_t AppleCryptoNative_MacGenerateSignature(SecKeyRef privateKey,
                                                int32_t *pOSStatusOut,
                                                CFErrorRef* pErrorOut);
 
-int32_t AppleCryptoNative_MacVerifySignature(SecKeyRef publicKey,
+int32_t AppleCryptoNative_iOSVerifySignature(SecKeyRef publicKey,
                                              uint8_t* pbDataHash,
                                              int32_t cbDataHash,
                                              uint8_t* pbSignature,

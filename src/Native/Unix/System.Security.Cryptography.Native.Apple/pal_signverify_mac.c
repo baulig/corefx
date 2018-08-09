@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#include "pal_signverify.h"
+#include "pal_signverify_mac.h"
 #include "pal_version.h"
 #include "pal_error.h"
 
@@ -12,14 +12,14 @@ static int32_t ExecuteVerifyTransform(SecTransformRef verifier, CFErrorRef* pErr
 static int32_t ConfigureSignVerifyTransform(
     SecTransformRef xform, CFDataRef cfDataHash, PAL_HashAlgorithm, bool useDigestAlgorithm, CFErrorRef* pErrorOut);
 
-static int32_t GenerateSignature(SecKeyRef privateKey,
-                                 uint8_t* pbDataHash,
-                                 int32_t cbDataHash,
-                                 PAL_HashAlgorithm hashAlgorithm,
-                                 bool useHashAlgorithm,
-                                 CFDataRef* pSignatureOut,
-                                 int32_t *pOSStatusOut,
-                                 CFErrorRef* pErrorOut)
+int32_t AppleCryptoNative_MacGenerateSignature(SecKeyRef privateKey,
+                                               uint8_t* pbDataHash,
+                                               int32_t cbDataHash,
+                                               PAL_HashAlgorithm hashAlgorithm,
+                                               bool useHashAlgorithm,
+                                               CFDataRef* pSignatureOut,
+                                               int32_t *pOSStatusOut,
+                                               CFErrorRef* pErrorOut)
 {
     if (pSignatureOut != NULL)
         *pSignatureOut = NULL;
@@ -60,38 +60,15 @@ static int32_t GenerateSignature(SecKeyRef privateKey,
     return ret;
 }
 
-int32_t AppleCryptoNative_GenerateSignature(SecKeyRef privateKey,
-                                            uint8_t* pbDataHash,
-                                            int32_t cbDataHash,
-                                            CFDataRef* pSignatureOut,
-                                            int32_t *pOSStatusOut,
-                                            CFErrorRef* pErrorOut)
-{
-    return GenerateSignature(
-        privateKey, pbDataHash, cbDataHash, PAL_Unknown, false, pSignatureOut, pOSStatusOut, pErrorOut);
-}
-
-int32_t AppleCryptoNative_GenerateSignatureWithHashAlgorithm(SecKeyRef privateKey,
-                                                             uint8_t* pbDataHash,
-                                                             int32_t cbDataHash,
-                                                             PAL_HashAlgorithm hashAlgorithm,
-                                                             CFDataRef* pSignatureOut,
-                                                             int32_t *pOSStatusOut,
-                                                             CFErrorRef* pErrorOut)
-{
-    return GenerateSignature(
-        privateKey, pbDataHash, cbDataHash, hashAlgorithm, true, pSignatureOut, pOSStatusOut, pErrorOut);
-}
-
-static int32_t VerifySignature(SecKeyRef publicKey,
-                               uint8_t* pbDataHash,
-                               int32_t cbDataHash,
-                               uint8_t* pbSignature,
-                               int32_t cbSignature,
-                               PAL_HashAlgorithm hashAlgorithm,
-                               bool useHashAlgorithm,
-                               int32_t *pOSStatusOut,
-                               CFErrorRef* pErrorOut)
+int32_t AppleCryptoNative_MacVerifySignature(SecKeyRef publicKey,
+                                             uint8_t* pbDataHash,
+                                             int32_t cbDataHash,
+                                             uint8_t* pbSignature,
+                                             int32_t cbSignature,
+                                             PAL_HashAlgorithm hashAlgorithm,
+                                             bool useHashAlgorithm,
+                                             int32_t *pOSStatusOut,
+                                             CFErrorRef* pErrorOut)
 {
     if (pErrorOut != NULL)
         *pErrorOut = NULL;
@@ -135,31 +112,6 @@ static int32_t VerifySignature(SecKeyRef publicKey,
     CFRelease(signature);
 
     return ret;
-}
-
-int32_t AppleCryptoNative_VerifySignatureWithHashAlgorithm(SecKeyRef publicKey,
-                                                           uint8_t* pbDataHash,
-                                                           int32_t cbDataHash,
-                                                           uint8_t* pbSignature,
-                                                           int32_t cbSignature,
-                                                           PAL_HashAlgorithm hashAlgorithm,
-                                                           int32_t *pOSStatusOut,
-                                                           CFErrorRef* pErrorOut)
-{
-    return VerifySignature(
-        publicKey, pbDataHash, cbDataHash, pbSignature, cbSignature, hashAlgorithm, true, pOSStatusOut, pErrorOut);
-}
-
-int32_t AppleCryptoNative_VerifySignature(SecKeyRef publicKey,
-                                          uint8_t* pbDataHash,
-                                          int32_t cbDataHash,
-                                          uint8_t* pbSignature,
-                                          int32_t cbSignature,
-                                          int32_t *pOSStatusOut,
-                                          CFErrorRef* pErrorOut)
-{
-    return VerifySignature(
-        publicKey, pbDataHash, cbDataHash, pbSignature, cbSignature, PAL_Unknown, false, pOSStatusOut, pErrorOut);
 }
 
 static int32_t ExecuteSignTransform(SecTransformRef signer, CFDataRef* pSignatureOut, CFErrorRef* pErrorOut)
