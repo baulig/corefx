@@ -50,6 +50,7 @@ extern ssize_t  getline(char **, size_t *, FILE *);
 #endif
 
 #if HAVE_STAT64
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #define stat_ stat64
 #define fstat_ fstat64
 #define lstat_ lstat64
