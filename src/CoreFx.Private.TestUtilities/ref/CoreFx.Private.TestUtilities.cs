@@ -43,6 +43,7 @@ namespace System
         public static bool IsReflectionEmitSupported;
         public static bool SupportsAlpn { get { throw null; } }
         public static bool SupportsClientAlpn { get { throw null; } }
+        public static bool SupportsSsl2AndSsl3 { get { throw null; } }
         public static bool ClientWebSocketPartialMessagesSupported { get { throw null; } }
         public static bool HasWindowsShell { get { throw null; } }
         public static bool IsArmProcess { get { throw null; } }
@@ -59,6 +60,7 @@ namespace System
         public static bool IsMacOsHighSierraOrHigher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public static bool IsNetBSD { get { throw null; } }
         public static bool IsFreeBSD { get { throw null; } }
+        public static bool IsMono { get { throw null; } }
         public static bool IsNetCore { get { throw null; } }
         public static bool IsNetfx462OrNewer { get { throw null; } }
         public static bool IsNetfx470OrNewer { get { throw null; } }
