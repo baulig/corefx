@@ -16,10 +16,12 @@ namespace System.Net.Http
 {
     internal static class ConnectHelper
     {
+#if MARTIN_FIXME
         /// <summary>Pool of event args to use to establish connections.</summary>
         private static readonly ConcurrentQueue<ConnectEventArgs>.Segment s_connectEventArgs =
             new ConcurrentQueue<ConnectEventArgs>.Segment(
                 ConcurrentQueue<ConnectEventArgs>.Segment.RoundUpToPowerOf2(Math.Max(2, Environment.ProcessorCount)));
+#endif
 
         /// <summary>
         /// Helper type used by HttpClientHandler when wrapping SocketsHttpHandler to map its
@@ -44,10 +46,14 @@ namespace System.Net.Http
             // Socket.ConnectAsync with a SocketAsyncEventArgs, as we can then use Socket.CancelConnectAsync
             // to cancel it if needed. Rent or allocate one.
             ConnectEventArgs saea;
+#if MARTIN_FIXME
             if (!s_connectEventArgs.TryDequeue(out saea))
             {
                 saea = new ConnectEventArgs();
             }
+#else
+            saea = new ConnectEventArgs();
+#endif
 
             try
             {
@@ -89,10 +95,14 @@ namespace System.Net.Http
             {
                 // Pool the event args, or if the pool is full, dispose of it.
                 saea.Clear();
+#if MARTIN_FIXME
                 if (!s_connectEventArgs.TryEnqueue(saea))
                 {
                     saea.Dispose();
                 }
+#else
+                saea.Dispose();
+#endif
             }
         }
 
