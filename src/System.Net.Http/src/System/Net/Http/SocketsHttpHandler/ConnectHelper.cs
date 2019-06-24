@@ -52,7 +52,7 @@ namespace System.Net.Http
                 saea = new ConnectEventArgs();
             }
 #else
-            saea = new ConnectEventArgs();
+            saea = new ConnectEventArgs(host, port);
 #endif
 
             try
@@ -112,6 +112,16 @@ namespace System.Net.Http
             public AsyncTaskMethodBuilder Builder { get; private set; }
             public CancellationToken CancellationToken { get; private set; }
 
+            string host;
+            int port;
+            string completed;
+
+            public ConnectEventArgs(string host, int port)
+            {
+                this.host = host;
+                this.port = port;
+            }
+
             public void Initialize(CancellationToken cancellationToken)
             {
                 CancellationToken = cancellationToken;
@@ -124,6 +134,10 @@ namespace System.Net.Http
 
             protected override void OnCompleted(SocketAsyncEventArgs _)
             {
+                var old = Interlocked.CompareExchange(ref completed, Environment.StackTrace, null);
+                if (old != null)
+                    throw new InvalidTimeZoneException($"I LIVE ON THE MOON: {host} {port}\n{old}");
+
                 switch (SocketError)
                 {
                     case SocketError.Success:
