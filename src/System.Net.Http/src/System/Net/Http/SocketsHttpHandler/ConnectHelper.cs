@@ -136,7 +136,7 @@ namespace System.Net.Http
             {
                 var old = Interlocked.CompareExchange(ref completed, Environment.StackTrace, null);
                 if (old != null)
-                    throw new InvalidTimeZoneException($"I LIVE ON THE MOON: {host} {port}\n{old}");
+                    throw new InvalidTimeZoneException($"I LIVE ON THE MOON: {host} {port}\n{old}\n\n");
 
                 switch (SocketError)
                 {
