@@ -91,7 +91,9 @@ namespace System.IO.Pipes
 
         private void HandleAcceptedSocket(Socket acceptedSocket)
         {
+            throw new InvalidTimeZoneException ($"I LIVE ON THE MOON!");
             var serverHandle = new SafePipeHandle(acceptedSocket);
+            throw new InvalidTimeZoneException ($"I LIVE ON THE MOON!");
 
             try
             {

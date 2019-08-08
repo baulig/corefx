@@ -8,6 +8,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Net.Sockets;
 
 namespace System.IO.Pipes
 {
@@ -25,6 +26,11 @@ namespace System.IO.Pipes
         private readonly PipeOptions _pipeOptions;
         private readonly HandleInheritability _inheritability;
         private readonly PipeDirection _direction;
+
+        public static SafePipeHandle MartinTest (Socket socket)
+        {
+            return new SafePipeHandle(socket);
+        }
 
         // Creates a named pipe client using default server (same machine, or "."), and PipeDirection.InOut 
         public NamedPipeClientStream(String pipeName)

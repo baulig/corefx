@@ -20,16 +20,19 @@ namespace System.IO.Pipes
     {
         private bool TryConnect(int timeout, CancellationToken cancellationToken)
         {
+            throw new InvalidTimeZoneException ($"I LIVE ON THE MOON!");
             // timeout and cancellationToken aren't used as Connect will be very fast,
             // either succeeding immediately if the server is listening or failing
             // immediately if it isn't.  The only delay will be between the time the server
             // has called Bind and Listen, with the latter immediately following the former.
+            Console.Error.WriteLine($"NPCS TC: {_normalizedPipePath}");
             var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
             SafePipeHandle clientHandle = null;
             try
             {
                 socket.Connect(new UnixDomainSocketEndPoint(_normalizedPipePath));
                 clientHandle = new SafePipeHandle(socket);
+                throw new InvalidTimeZoneException ($"I LIVE ON THE MOON!");
                 ConfigureSocket(socket, clientHandle, _direction, 0, 0, _inheritability);
             }
             catch (SocketException e)
