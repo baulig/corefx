@@ -26,9 +26,6 @@ namespace System.IO.Pipes
         private readonly HandleInheritability _inheritability;
         private readonly PipeDirection _direction;
 
-        static int nextId;
-        internal readonly int ID = ++nextId;
-
         // Creates a named pipe client using default server (same machine, or "."), and PipeDirection.InOut 
         public NamedPipeClientStream(String pipeName)
             : this(".", pipeName, PipeDirection.InOut, PipeOptions.None, TokenImpersonationLevel.None, HandleInheritability.None)
@@ -206,8 +203,6 @@ namespace System.IO.Pipes
             {
                 return Task.FromCanceled(cancellationToken);
             }
-
-            Console.Error.WriteLine($"NPCS CA: {ID}\n{Environment.StackTrace}");
 
             int startTime = Environment.TickCount; // We need to measure time here, not in the lambda
             return Task.Run(() => ConnectInternal(timeout, cancellationToken, startTime), cancellationToken);

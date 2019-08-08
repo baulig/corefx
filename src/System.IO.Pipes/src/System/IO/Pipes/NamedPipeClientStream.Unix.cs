@@ -28,14 +28,12 @@ namespace System.IO.Pipes
             SafePipeHandle clientHandle = null;
             try
             {
-                Console.Error.WriteLine($"NPCS TC: {ID}");
                 socket.Connect(new UnixDomainSocketEndPoint(_normalizedPipePath));
                 clientHandle = new SafePipeHandle(socket);
-//                ConfigureSocket(socket, clientHandle, _direction, 0, 0, _inheritability);
+                ConfigureSocket(socket, clientHandle, _direction, 0, 0, _inheritability);
             }
             catch (SocketException e)
             {
-                Console.Error.WriteLine($"NPCS TC EX: {ID} - {e}");
                 clientHandle?.Dispose();
                 socket.Dispose();
 
@@ -51,34 +49,21 @@ namespace System.IO.Pipes
                     default:
                         throw;
                 }
-            } finally {
-                Console.Error.WriteLine($"NPCS TC FINALLY: {ID}");
             }
-
-            throw new InvalidTimeZoneException($"I LIVE ON THE MOON!");
 
             try
             {
                 ValidateRemotePipeUser(clientHandle);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.Error.WriteLine($"NPCS TC EX #1: {ID} {e}");
                 clientHandle.Dispose();
                 socket.Dispose();
                 throw;
             }
 
-            throw new InvalidTimeZoneException($"I LIVE ON THE MOON!");
-
             InitializeHandle(clientHandle, isExposed: false, isAsync: (_pipeOptions & PipeOptions.Asynchronous) != 0);
             State = PipeState.Connected;
-
-            Console.Error.WriteLine($"NPCS TC DONE: {ID}");
-            Thread.Sleep (5000);
-            socket.Dispose ();
-            Console.Error.WriteLine($"NPCS TC DONE #1: {ID}");
-
             return true;
         }
 
