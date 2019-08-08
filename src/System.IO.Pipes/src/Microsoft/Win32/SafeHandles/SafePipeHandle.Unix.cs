@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Threading;
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -28,6 +29,7 @@ namespace Microsoft.Win32.SafeHandles
 
         internal SafePipeHandle(Socket namedPipeSocket) : base(ownsHandle: true)
         {
+            Console.Error.WriteLine($"SPH: {namedPipeSocket}");
             Debug.Assert(namedPipeSocket != null);
             _namedPipeSocket = namedPipeSocket;
 
@@ -38,7 +40,9 @@ namespace Microsoft.Win32.SafeHandles
             _namedPipeSocketHandle = (SafeHandle)safeHandleProperty?.GetValue(namedPipeSocket, null);
 
             bool ignored = false;
+            Console.Error.WriteLine($"SPH #1: {namedPipeSocket} {_namedPipeSocketHandle} {ignored}");
             _namedPipeSocketHandle.DangerousAddRef(ref ignored);
+            Console.Error.WriteLine($"SPH #2: {namedPipeSocket} {_namedPipeSocketHandle} {ignored}");
             SetHandle(_namedPipeSocketHandle.DangerousGetHandle());
         }
 
@@ -60,11 +64,11 @@ namespace Microsoft.Win32.SafeHandles
             Debug.Assert(!IsInvalid);
 
             // Clean up resources for named handles
-            if (_namedPipeSocketHandle != null)
+            var oldHandle = Interlocked.Exchange (ref _namedPipeSocketHandle, null);
+            if (oldHandle != null)
             {
                 SetHandle(DefaultInvalidHandle);
-                _namedPipeSocketHandle.DangerousRelease();
-                _namedPipeSocketHandle = null;
+                oldHandle?.DangerousRelease();
                 return true;
             }
 

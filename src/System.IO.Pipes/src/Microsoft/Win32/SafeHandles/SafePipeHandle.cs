@@ -18,6 +18,7 @@ namespace Microsoft.Win32.SafeHandles
         public SafePipeHandle(IntPtr preexistingHandle, bool ownsHandle)
             : base(ownsHandle)
         {
+            Console.Error.WriteLine($"SPH: {preexistingHandle:x4} {ownsHandle}");
             SetHandle(preexistingHandle);
         }
 
