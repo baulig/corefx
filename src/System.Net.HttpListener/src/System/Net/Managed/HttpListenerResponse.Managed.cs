@@ -148,6 +148,12 @@ namespace System.Net
                     {
                         thisRef.OutputStream.EndWrite(iar);
                     }
+#if MONO
+                    catch (ObjectDisposedException)
+                    {
+                        // FIXME
+                    }
+#endif
                     finally
                     {
                         thisRef.Close(false);
