@@ -1248,7 +1248,21 @@ static int32_t CopyFile_ReadWrite(int inFd, int outFd)
 }
 #endif // !HAVE_FCOPYFILE
 
-int32_t SystemNative_CopyFile(intptr_t sourceFd, intptr_t destinationFd)
+static bool
+is_at_least_as_restrictive_as(mode_t source, mode_t target)
+{
+    int perms[6] = { S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH };
+
+    for (int i = 0; i < sizeof (perms) / sizeof (int); i++) {
+        // Compare permissions bit by bit.
+        if (((target & perms [i]) != 0) && ((source & perms [i]) == 0))
+            return false;
+    }
+
+    return true;
+}
+
+static int32_t SystemNative_CopyFile_internal(intptr_t sourceFd, intptr_t destinationFd, bool ignorePermissions)
 {
     int inFd = ToFileDescriptor(sourceFd);
     int outFd = ToFileDescriptor(destinationFd);
@@ -1263,6 +1277,7 @@ int32_t SystemNative_CopyFile(intptr_t sourceFd, intptr_t destinationFd)
     int ret;
     struct stat_ sourceStat;
     bool copied = false;
+    bool fchmodFailed = false;
 
     // First, stat the source file.
     while ((ret = fstat_(inFd, &sourceStat)) < 0 && errno == EINTR);
@@ -1272,17 +1287,35 @@ int32_t SystemNative_CopyFile(intptr_t sourceFd, intptr_t destinationFd)
         return -1;
     }
 
-    // Copy permissions.  This fchmod() needs to happen prior to writing anything into
-    // the file to avoid possibly leaking any private data.
-    while ((ret = fchmod(outFd, sourceStat.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO))) < 0 && errno == EINTR);
-#if !TARGET_ANDROID
-    // On Android, we are not allowed to modify permissions, but the copy should still succeed;
-    // see https://github.com/mono/mono/issues/17133 for details.
-    if (ret != 0)
+    if (!ignorePermissions)
     {
-        return -1;
-    }
+        // Copy permissions.  This fchmod() needs to happen prior to writing anything into
+        // the file to avoid possibly leaking any private data.
+        while ((ret = fchmod(outFd, sourceStat.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO))) < 0 && errno == EINTR);
+#if !TARGET_ANDROID
+        // On Android, we are not allowed to modify permissions, but the copy should still succeed;
+        // see https://github.com/mono/mono/issues/17133 for details.
+        if (ret != 0)
+        {
+            struct stat_ targetStat;
+
+            // Now, stat the target file.
+            while ((ret = fstat_(outFd, &targetStat)) < 0 && errno == EINTR);
+            if (ret != 0)
+            {
+                // If we can't stat() it, then we likely don't have permission to write it.
+                return -1;
+            }
+
+            if (!is_at_least_as_restrictive_as(sourceStat.st_mode, targetStat.st_mode))
+            {
+                return -1;
+            }
+
+            fchmodFailed = true;
+        }
 #endif
+    }
 
 #if HAVE_SENDFILE_4
     // If sendfile is available (Linux), try to use it, as the whole copy
@@ -1353,7 +1386,7 @@ int32_t SystemNative_CopyFile(intptr_t sourceFd, intptr_t destinationFd)
 
 #if !TARGET_ANDROID
     // On Android, the copy should still succeed even if copying the file times didn't.
-    if (ret != 0)
+    if (!fchmodFailed && !ignorePermissions && ret != 0)
     {
         return -1;
     }
@@ -1361,6 +1394,65 @@ int32_t SystemNative_CopyFile(intptr_t sourceFd, intptr_t destinationFd)
 
     return 0;
 #endif // HAVE_FCOPYFILE
+}
+
+int32_t SystemNative_CopyFile(intptr_t sourceFd, intptr_t destinationFd)
+{
+    return SystemNative_CopyFile_internal(sourceFd, destinationFd, false);
+}
+
+int32_t SystemNative_CopyFile2(const char* sourcePath, const char *targetPath, int32_t overwrite)
+{
+    struct stat_ sourceStat;
+    int inFd = 0, outFd = 0, flags, ret;
+    bool ignorePermissions;
+
+    while ((inFd = open(sourcePath, O_RDONLY | O_NOFOLLOW)) < 0 && errno == EINTR);
+    if (inFd < 0)
+    {
+        return -1;
+    }
+
+    // fstat() the source file to get it's file permissions.
+    while ((ret = fstat_(inFd, &sourceStat)) < 0 && errno == EINTR);
+    if (ret != 0)
+    {
+        goto outError;
+    }
+
+    flags = O_CREAT | O_WRONLY;
+    if (overwrite != 0)
+    {
+        flags |= O_TRUNC;
+        ignorePermissions = false;
+    }
+    else
+    {
+        flags |= O_EXCL;
+        // since we're creating the target file and specify it's permissions, we can skip
+        // the fchmod() call.
+        ignorePermissions = true;
+    }
+
+    while ((outFd = open(targetPath, flags, sourceStat.st_mode)) < 0 && errno == EINTR);
+    if (outFd < 0)
+    {
+        ret = -1;
+        goto outError;
+    }
+
+    ret = SystemNative_CopyFile_internal(inFd, outFd, ignorePermissions);
+
+outError:
+    if (inFd > 0)
+    {
+        close(inFd);
+    }
+    if (outFd > 0)
+    {
+        close(outFd);
+    }
+    return ret;
 }
 
 intptr_t SystemNative_INotifyInit(void)

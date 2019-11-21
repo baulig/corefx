@@ -14,11 +14,13 @@ namespace System.IO
 
         private static bool CopyDanglingSymlink(string sourceFullPath, string destFullPath)
         {
+            Console.Error.WriteLine($"COPY DANGLING SYMLINK: {sourceFullPath} {destFullPath}");
             // Check if the source is a dangling symlink. In those cases, we just want to copy the link
             Interop.Sys.FileStatus ignored;
             if (! (Interop.Sys.Stat(sourceFullPath, out ignored) < 0 &&
                 Interop.Sys.LStat(sourceFullPath, out ignored) == 0))
             {
+                Console.Error.WriteLine($"COPY DANGLING SYMLINK #1: {sourceFullPath} {destFullPath}");
                 return false;
             }
 
@@ -40,6 +42,8 @@ namespace System.IO
 
         public static void CopyFile(string sourceFullPath, string destFullPath, bool overwrite)
         {
+            Console.Error.WriteLine($"COPY FILE: {sourceFullPath} {destFullPath}");
+
             // The destination path may just be a directory into which the file should be copied.
             // If it is, append the filename from the source onto the destination directory
             if (DirectoryExists(destFullPath))
@@ -50,12 +54,8 @@ namespace System.IO
             if (CopyDanglingSymlink(sourceFullPath, destFullPath))
                 return;
 
-            // Copy the contents of the file from the source to the destination, creating the destination in the process
-            using (var src = new FileStream(sourceFullPath, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize, FileOptions.None))
-            using (var dst = new FileStream(destFullPath, overwrite ? FileMode.Create : FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, DefaultBufferSize, FileOptions.None))
-            {
-                Interop.CheckIo(Interop.Sys.CopyFile(src.SafeFileHandle, dst.SafeFileHandle));
-            }
+            var ret = Interop.Sys.CopyFile(sourceFullPath, destFullPath, overwrite ? 1 : 0);
+            Interop.CheckIo(ret);
         }
 
         private static void LinkOrCopyFile (string sourceFullPath, string destFullPath)

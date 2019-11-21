@@ -71,6 +71,7 @@ namespace System.IO
             if (destFileName.Length == 0)
                 throw new ArgumentException(SR.Argument_EmptyFileName, nameof(destFileName));
 
+            Console.Error.WriteLine($"FILE COPY: {sourceFileName} {destFileName}");
             FileSystem.CopyFile(Path.GetFullPath(sourceFileName), Path.GetFullPath(destFileName), overwrite);
         }
 

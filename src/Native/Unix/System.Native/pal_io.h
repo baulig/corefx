@@ -711,6 +711,8 @@ DLLEXPORT int32_t SystemNative_Write(intptr_t fd, const void* buffer, int32_t bu
  */
 DLLEXPORT int32_t SystemNative_CopyFile(intptr_t sourceFd, intptr_t destinationFd);
 
+DLLEXPORT int32_t SystemNative_CopyFile2(const char* sourcePath, const char *targetPath, int32_t overwrite);
+
 /**
 * Initializes a new inotify instance and returns a file
 * descriptor associated with a new inotify event queue.
