@@ -1396,12 +1396,7 @@ static int32_t SystemNative_CopyFile_internal(intptr_t sourceFd, intptr_t destin
 #endif // HAVE_FCOPYFILE
 }
 
-int32_t SystemNative_CopyFile(intptr_t sourceFd, intptr_t destinationFd)
-{
-    return SystemNative_CopyFile_internal(sourceFd, destinationFd, false);
-}
-
-int32_t SystemNative_CopyFile2(const char* sourcePath, const char *targetPath, int32_t overwrite)
+int32_t SystemNative_CopyFile(const char* sourcePath, const char *targetPath, int32_t overwrite)
 {
     struct stat_ sourceStat;
     int inFd = 0, outFd = 0, flags, ret;

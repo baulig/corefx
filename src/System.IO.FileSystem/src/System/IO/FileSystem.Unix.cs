@@ -14,13 +14,11 @@ namespace System.IO
 
         private static bool CopyDanglingSymlink(string sourceFullPath, string destFullPath)
         {
-            Console.Error.WriteLine($"COPY DANGLING SYMLINK: {sourceFullPath} {destFullPath}");
             // Check if the source is a dangling symlink. In those cases, we just want to copy the link
             Interop.Sys.FileStatus ignored;
             if (! (Interop.Sys.Stat(sourceFullPath, out ignored) < 0 &&
                 Interop.Sys.LStat(sourceFullPath, out ignored) == 0))
             {
-                Console.Error.WriteLine($"COPY DANGLING SYMLINK #1: {sourceFullPath} {destFullPath}");
                 return false;
             }
 
@@ -42,8 +40,6 @@ namespace System.IO
 
         public static void CopyFile(string sourceFullPath, string destFullPath, bool overwrite)
         {
-            Console.Error.WriteLine($"COPY FILE: {sourceFullPath} {destFullPath}");
-
             // The destination path may just be a directory into which the file should be copied.
             // If it is, append the filename from the source onto the destination directory
             if (DirectoryExists(destFullPath))

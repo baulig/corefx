@@ -709,9 +709,7 @@ DLLEXPORT int32_t SystemNative_Write(intptr_t fd, const void* buffer, int32_t bu
  *
  * Returns 0 on success; otherwise, returns -1 and sets errno.
  */
-DLLEXPORT int32_t SystemNative_CopyFile(intptr_t sourceFd, intptr_t destinationFd);
-
-DLLEXPORT int32_t SystemNative_CopyFile2(const char* sourcePath, const char *targetPath, int32_t overwrite);
+DLLEXPORT int32_t SystemNative_CopyFile(const char* sourcePath, const char *targetPath, int32_t overwrite);
 
 /**
 * Initializes a new inotify instance and returns a file
